@@ -50,8 +50,8 @@ set charfhr="fhr"`printf %02i $nfhr`
 cat > calc-increment.input <<EOF
 &share
 debug=F
-analysis_filename="${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
-firstguess_filename="${datapath2}/sfg_${analdate}_${charfhr}_${charnanal}"
+analysis_filename="${datapath2}/sanl_${analdate}_${charfhr}_ensmean"
+firstguess_filename="${datapath2}/sfg_${analdate}_${charfhr}_ensmean"
 increment_filename="fv3_increment${nfhr}.nc"
 /
 EOF
@@ -61,8 +61,8 @@ else
 cat > calc-increment.input <<EOF
 &share
 debug=F
-analysis_filename="${datapath2}/sanl_${analdate}_${charnanal}"
-firstguess_filename="${datapath2}/sfg_${analdate}_fhr06_${charnanal}"
+analysis_filename="${datapath2}/sanl_${analdate}_ensmean"
+firstguess_filename="${datapath2}/sfg_${analdate}_fhr06_ensmean"
 increment_filename="fv3_increment.nc"
 /
 EOF
