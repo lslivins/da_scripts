@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ulimit -s unlimited
 
-export exptname=C96_iau_test
+export exptname=C96_iau_psonly
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia and jet.
@@ -19,9 +19,9 @@ export ensda="enkf_run.csh"
 export rungsi='run_gsi_4densvar.sh'
 export rungfs='run_fv3.sh' # ensemble forecast
 
-export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
+export recenter_anal="false" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
-export controlanal='true'
+export controlanal='false'
 export cleanup_fg='true'
 export cleanup_ensmean='true'
 export cleanup_anal='true'
@@ -50,11 +50,9 @@ if [ "$machine" == 'wcoss' ]; then
    module load grib_util/1.0.3
    module load nco-gnu-sandybridge
 elif [ "$machine" == 'theia' ]; then
-   export basedir=/scratch3/BMC/gsienkf/${USER}
+   export basedir=/scratch3/BMC/gsienkf/${USER}/20CR
    export datadir=$basedir
    export hsidir="/ESRL/BMC/gsienkf/2year/whitaker/${exptname}"
-   module load wgrib
-   export WGRIB=`which wgrib`
    module load nco
 elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f1/unswept/${USER}/nggps
@@ -70,23 +68,28 @@ else
 fi
 export datapath="${datadir}/${exptname}"
 export logdir="${datadir}/logs/${exptname}"
-export corrlengthnh=1250
-export corrlengthtr=1250
-export corrlengthsh=1250
-export lnsigcutoffnh=1.25
-export lnsigcutofftr=1.25
-export lnsigcutoffsh=1.25
-export lnsigcutoffpsnh=1.25
-export lnsigcutoffpstr=1.25
-export lnsigcutoffpssh=1.25
-export lnsigcutoffsatnh=1.25  
-export lnsigcutoffsattr=1.25  
-export lnsigcutoffsatsh=1.25  
+export corrlengthnh=4000
+export corrlengthtr=4000
+export corrlengthsh=4000
+export lnsigcutoffnh=4.00
+export lnsigcutofftr=4.00
+export lnsigcutoffsh=4.00
+export lnsigcutoffpsnh=4.00
+export lnsigcutoffpstr=4.00
+export lnsigcutoffpssh=4.00
+export lnsigcutoffsatnh=4.00  
+export lnsigcutoffsattr=4.00  
+export lnsigcutoffsatsh=4.00  
 export obtimelnh=1.e30       
 export obtimeltr=1.e30       
 export obtimelsh=1.e30       
-export readin_localization=.true.
+# min allowed covl reduction (make 1.0 to turn off covl reduction with increasing paoverpb)
+export covl_minfact=0.05
+# covl_efold smaller means less reduction of covl as paoverpb -> 1
+export covl_efold=0.2
+export readin_localization=.false.
 export massbal_adjust=.false.
+export lastndays=60
 
 # model parameters for ensemble (rest set in $rungfs)
 # lo-res
@@ -161,52 +164,35 @@ export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 
 export SMOOTHINF=35
 export npts=`expr \( $LONA \) \* \( $LATA \)`
-export obs_datapath=${basedir}/gdas1bufr
-#export obs_datapath=/gpfs/hps2/esrl/gefsrr/noscrub/cfsr_dumps
+export obsdirh5=${basedir}/HDF5/V4.1/ 
+export sstpath=${basedir}/bound_cond_HadISST2.1
 export RUN=gdas1 # use gdas obs
 export reducedgrid=.false.
 export univaroz=.false.
 
-export iassim_order=0
+export iassim_order=2
 
 export covinflatemax=1.e2
 export covinflatemin=1.0                                            
-export analpertwtnh=0.85
-export analpertwtsh=0.85
-export analpertwttr=0.85
-export pseudo_rh=.true.
+export analpertwtnh=0.9
+export analpertwtsh=0.9
+export analpertwttr=0.7
+export pseudo_rh=.false.
 export use_qsatensmean=.true.
                                                                     
 export letkf_flag=.false.
 export nobsl_max=10000
-export sprd_tol=1.e30
-export varqc=.false.
-export huber=.false.
-export zhuberleft=1.e10
-export zhuberright=1.e10
+export sprd_tol=3.2   
+export varqc=.true.
+export huber=.true.
+export zhuberleft=1.1
+export zhuberright=1.1
+export numiter=7
+export lupd_satbiasc=.false.
 
-export biasvar=-500
-if [ $controlanal == 'false' ];  then
-   export lupd_satbiasc=.true.
-   export numiter=4
-else
-   export lupd_satbiasc=.false.
-   export numiter=1
-fi
-# use pre-generated bias files.
-#export lupd_satbiasc=.false.
-#export numiter=1
-
-
-#export sprd_tol=10.
-#export varqc=.true.
-#export huber=.true.
-#export zhuberleft=1.1
-#export zhuberright=1.1
+export nanals=64                                                    
                                                                     
-export nanals=80                                                    
-                                                                    
-export paoverpb_thresh=0.99 
+export paoverpb_thresh=1.0  
 export saterrfact=1.0
 export deterministic=.true.
 export sortinc=.true.
@@ -229,6 +215,7 @@ if [ "$machine" == 'theia' ]; then
    export FCSTEXEC=${execdir}/${fv3exec}
    export gsiexec=${execdir}/global_gsi
    export nemsioget=${execdir}/nemsio_get
+   export python=/contrib/anaconda/2.3.0/bin/python
 elif [ "$machine" == 'gaea' ]; then
 # warning - these paths need to be updated on gaea
    export FIXGLOBAL=${basedir}/fv3gfs/global_shared.v15.0.0/fix/fix_am

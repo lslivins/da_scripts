@@ -36,4 +36,40 @@ endif
 end
 ls -l ${datapath2}/sanl_${analdate}*ensmean
 
+# calculate ens mean increment file.
+echo "compute ensemble mean increment file `date`"
+setenv nprocs 1
+setenv mpitaskspernode 1
+setenv PGM ${execdir}/calc_increment.x
+mkdir -p ${datapath2}/ensmean/INPUT
+pushd ${datapath2}/ensmean/INPUT
+if ($iau_delthrs != -1) then
+set iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
+foreach nfhr ( $iaufhrs2 )
+set charfhr="fhr"`printf %02i $nfhr`
+cat > calc-increment.input <<EOF
+&share
+debug=F
+analysis_filename="${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
+firstguess_filename="${datapath2}/sfg_${analdate}_${charfhr}_${charnanal}"
+increment_filename="fv3_increment${nfhr}.nc"
+/
+EOF
+sh ${enkfscripts}/runmpi
+end
+else
+cat > calc-increment.input <<EOF
+&share
+debug=F
+analysis_filename="${datapath2}/sanl_${analdate}_${charnanal}"
+firstguess_filename="${datapath2}/sfg_${analdate}_fhr06_${charnanal}"
+increment_filename="fv3_increment.nc"
+/
+EOF
+sh ${enkfscripts}/runmpi
+endif
+popd
+ls -l  ${datapath2}/ensmean/INPUT/fv*increment*nc
+echo "done computing ensemble mean increment files `date`"
+
 exit 0

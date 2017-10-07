@@ -1,22 +1,41 @@
 FV3 Ensemble Member 001 Forecast
 YYYY MM DD HH 0 0
 
-"fv3_history",    0,  "hours",  1,  "hours",  "time"
+"fv3x_history",    0,  "hours",  1,  "hours",  "time"
 "fv3_history2d",  0,  "hours",  1,  "hours",  "time"
+"fv3_history",   FHOUT,  "hours",  1,  "hours",  "time"
 
-"gfs_dyn",     "ucomp",       "ugrd",      "fv3_history",    "all",  .false.,  "none",  2
-"gfs_dyn",     "vcomp",       "vgrd",      "fv3_history",    "all",  .false.,  "none",  2
-"gfs_dyn",     "sphum",       "spfh",      "fv3_history",    "all",  .false.,  "none",  2
-"gfs_dyn",     "temp",        "tmp",       "fv3_history",    "all",  .false.,  "none",  2
-"gfs_dyn",     "liq_wat",     "clwmr",     "fv3_history",    "all",  .false.,  "none",  2
-"gfs_dyn",     "o3mr",        "o3mr",      "fv3_history",    "all",  .false.,  "none",  2
-#"gfs_dyn",     "delp",        "dpres",     "fv3_history",    "all",  .false.,  "none",  2
-#"gfs_dyn",     "delz",        "delz",      "fv3_history",    "all",  .false.,  "none",  2
-#"gfs_dyn",     "pfhy",        "preshy",    "fv3_history",    "all",  .false.,  "none",  2
-#"gfs_dyn",     "pfnh",        "presnh",    "fv3_history",    "all",  .false.,  "none",  2
-#"gfs_dyn",     "w",           "vvel",      "fv3_history",    "all",  .false.,  "none",  2
-"gfs_dyn",     "ps",          "pressfc",   "fv3_history",    "all",  .false.,  "none",  2
-"gfs_dyn",     "hs",          "hgtsfc",    "fv3_history",    "all",  .false.,  "none",  2
+"gfs_dyn",     "ucomp",       "ugrd",      "fv3x_history",    "all",  .false.,  "none",  2
+"gfs_dyn",     "vcomp",       "vgrd",      "fv3x_history",    "all",  .false.,  "none",  2
+"gfs_dyn",     "sphum",       "spfh",      "fv3x_history",    "all",  .false.,  "none",  2
+"gfs_dyn",     "temp",        "tmp",       "fv3x_history",    "all",  .false.,  "none",  2
+"gfs_dyn",     "liq_wat",     "clwmr",     "fv3x_history",    "all",  .false.,  "none",  2
+"gfs_dyn",     "o3mr",        "o3mr",      "fv3x_history",    "all",  .false.,  "none",  2
+#"gfs_dyn",     "delp",        "dpres",     "fv3x_history",    "all",  .false.,  "none",  2
+#"gfs_dyn",     "delz",        "delz",      "fv3x_history",    "all",  .false.,  "none",  2
+#"gfs_dyn",     "pfhy",        "preshy",    "fv3x_history",    "all",  .false.,  "none",  2
+#"gfs_dyn",     "pfnh",        "presnh",    "fv3x_history",    "all",  .false.,  "none",  2
+#"gfs_dyn",     "w",           "vvel",      "fv3x_history",    "all",  .false.,  "none",  2
+"gfs_dyn",     "ps",          "pressfc",   "fv3x_history",    "all",  .false.,  "none",  2
+"gfs_dyn",     "hs",          "hgtsfc",    "fv3x_history",    "all",  .false.,  "none",  2
+
+"dynamics" "zsurf"     "zs"        "fv3_history" "all" .false. "none" 2
+"dynamics" "ps"        "ps"        "fv3_history" "all" .false. "none" 2
+"dynamics" "pfhy"      "pfhy"      "fv3_history" "all" .false. "none" 2
+"dynamics" "ucomp"      "ucomp"    "fv3_history" "all" .false. "none" 2
+"dynamics" "vcomp"      "vcomp"    "fv3_history" "all" .false. "none" 2
+"dynamics" "temp"      "temp"      "fv3_history" "all" .false. "none" 2
+"dynamics" "sphum"     "sphum"     "fv3_history" "all" .false. "none" 2
+#"dynamics" "liq_wat"   "clwmr"     "fv3_history" "all" .false. "none" 2
+#"dynamics" "o3mr"      "o3mr"      "fv3_history" "all" .false. "none" 2
+#"dynamics" "delz"      "delz"      "fv3_history" "all" .false. "none" 2
+#"dynamics" "w"         "vvel"      "fv3_history" "all" .false. "none" 2
+"dynamics" "u_plev"    "u_plev"    "fv3_history" "all" .false. "none" 2
+"dynamics" "v_plev"    "v_plev"    "fv3_history" "all" .false. "none" 2
+"dynamics" "t_plev"    "t_plev"    "fv3_history" "all" .false. "none" 2
+"dynamics" "h_plev"    "h_plev"    "fv3_history" "all" .false. "none" 2
+"dynamics" "q_plev"    "q_plev"    "fv3_history" "all" .false. "none" 2
+"dynamics" "omg_plev"  "omg_plev"  "fv3_history" "all" .false. "none" 2
 
 "gfs_phys",  "ALBDOsfc",      "albdo",     "fv3_history2d",         "all",  .false.,  "none",  2
 "gfs_phys",  "cnvprcp",       "cprat",     "fv3_history2d",         "all",  .false.,  "none",  2

@@ -1,31 +1,11 @@
 #!/bin/csh 
 
-# no need to run GSI for observer,
-# just symlink diag files generated from GSI hybrid run.
-echo "make symlinks for diag files.."
-set diagfiles = `ls -1 ${datapath2}/diag*control`
-foreach diagfile ($diagfiles)
-  set diagfile2=`basename $diagfile "_control"`
-  ln -fs $diagfile ${datapath2}/${diagfile2}_ensmean
-end
+# for 20CR, just point to dummy bias correction files.
+setenv GBIAS ${enkfscripts}/gdas1.t00z.abias
+setenv GBIAS_PC ${enkfscripts}/gdas1.t00z.abias_pc
+setenv GBIASAIR ${enkfscripts}/gdas1.t00z.abias_air
+setenv ABIAS ${enkfscripts}/abias.out
 
-# need symlinks for satbias_angle, satbias_in, satinfo
-if ( ! $?biascorrdir ) then # cycled bias correction files
-    setenv GBIAS ${datapathm1}/${PREINPm1}abias
-    setenv GBIAS_PC ${datapathm1}/${PREINPm1}abias_pc
-    setenv GBIASAIR ${datapathm1}/${PREINPm1}abias_air
-    if ($cold_start_bias == "true") then
-      setenv GBIAS ${datapath2}/${PREINP}abias
-      setenv GBIAS_PC ${datapath2}/${PREINP}abias_pc
-      setenv GBIASAIR ${datapath2}/${PREINP}abias_air
-    endif
-    setenv ABIAS ${datapath2}/${PREINP}abias
-else # externally specified bias correction files.
-    setenv GBIAS ${biascorrdir}/${analdate}//${PREINPm1}abias
-    setenv GBIAS_PC ${biascorrdir}/${analdate}//${PREINPm1}abias_pc
-    setenv GBIASAIR ${biascorrdir}/${analdate}//${PREINPm1}abias_air
-    setenv ABIAS ${biascorrdir}/${analdate}//${PREINPm1}abias
-endif
 setenv GSATANG $fixgsi/global_satangbias.txt # not used, but needs to exist
 
 ln -fs $GBIAS   ${datapath2}/satbias_in

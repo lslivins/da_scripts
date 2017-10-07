@@ -104,40 +104,35 @@ setenv PREINPm1 "${RUN}.t${hrm1}z."
 
 if ($fg_only ==  'false') then
 
+# extract hdf5 to text file, reformat
+/bin/rm -rf ${datapath2}/psobfile
+/bin/rm -rf ${datapath2}/psobs.txt
+csh ${enkfscripts}/extracth5ps_v4.csh $analdate ${datapath2}/psobfile
+ls -l ${datapath2}/psobfile
+
+echo "compute bias correction..."
+if ($analdate >= `$incdate $analdate_start 12`) then
+ time $python ${enkfscripts}/get_biascorr.py ${analdate} ${datapath2}/psobs.txt   &
+else
+ # to skip bias correction, use this...
+ time $python ${enkfscripts}/rewrite2.py ${datapath2}/psobfile ${datapath2}/psobs.txt $analdate  
+ head -2 ${datapath2}/psobs.txt
+endif
+
+# run forward operator
+echo "$analdate starting forward operator computation `date`"
+sh ${enkfscripts}/psop_fv3.sh >&!  ${current_logdir}/compute_hop.out
+if ( ! -s ${datapath2}/diag_conv_ges.${analdate}_ensmean || ! -s ${datapath2}/psobs_prior.txt) then
+   echo "$analdate computing forward operator failed, exiting..."
+   exit 1
+else
+   echo "$analdate done computing forward operator `date`"
+endif
+
+# compute ensemble mean forecast files.
 echo "$analdate starting ens mean computation `date`"
 csh ${enkfscripts}/compute_ensmean_fcst.csh >&!  ${current_logdir}/compute_ensmean_fcst.out
 echo "$analdate done computing ensemble mean `date`"
-
-# do hybrid control analysis
-if ($controlanal == 'true') then
-   # single res hybrid, just symlink ensmean to control (no separate control forecast)
-   set fh=0
-   while ($fh <= $FHMAX)
-     set fhr=`printf %02i $fh`
-     ln -fs $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_control
-     ln -fs $datapath2/bfg_${analdate}_fhr${fhr}_ensmean $datapath2/bfg_${analdate}_fhr${fhr}_control
-     @ fh = $fh + $FHOUT
-   end
-   # if ${datapathm1}/cold_start_bias exists, GSI run in 'observer' mode
-   # to generate diag_rad files to initialize angle-dependent 
-   # bias correction.
-   if ( -f ${datapathm1}/cold_start_bias ) then
-      setenv cold_start_bias "true"
-   else
-      setenv cold_start_bias "false"
-   endif
-   # run control analysis
-   echo "$analdate run hybrid `date`"
-   csh ${enkfscripts}/run_hybridanal.csh >&! ${current_logdir}/run_gsi_hybrid.out 
-   # once hybrid has completed, check log files.
-   set hybrid_done=`cat ${current_logdir}/run_gsi_hybrid.log`
-   if ($hybrid_done == 'yes') then
-     echo "$analdate hybrid analysis completed successfully `date`"
-   else
-     echo "$analdate hybrid analysis did not complete successfully, exiting `date`"
-     exit 1
-   endif
-endif
 
 # do enkf analysis.
 echo "$analdate run enkf `date`"
@@ -149,19 +144,6 @@ if ($enkf_done == 'yes') then
 else
   echo "$analdate enkf analysis did not complete successfully, exiting `date`"
   exit 1
-endif
-
-# recenter enkf analyses around control analysis
-if ($controlanal == 'true' && $recenter_anal == 'true') then
-   echo "$analdate recenter enkf analysis ensemble around control analysis `date`"
-   csh ${enkfscripts}/recenter_ens_anal.csh >&! ${current_logdir}/recenter_ens_anal.out 
-   set recenter_done=`cat ${current_logdir}/recenter_ens.log`
-   if ($recenter_done == 'yes') then
-     echo "$analdate recentering enkf analysis completed successfully `date`"
-   else
-     echo "$analdate recentering enkf analysis did not complete successfully, exiting `date`"
-     exit 1
-   endif
 endif
 
 endif # skip to here if fg_only = true or fg_only == true
@@ -225,20 +207,13 @@ else
    qsub -V job_hpss.sh
 endif
 
-if ($hr == "00") then
-  if ($machine == 'wcoss') then
-     bsub -env "all" < run_fv3_long.sh
-   endif
-endif
-
-
-
 endif # skip to here if fg_only = true
 
 # next analdate: increment by $ANALINC
 setenv analdate `${incdate} $analdate $ANALINC`
 
 echo "setenv analdate ${analdate}" >! $startupenv
+echo "setenv analdate_start ${analdate_start}" >> $startupenv
 echo "setenv analdate_end ${analdate_end}" >> $startupenv
 echo "setenv fg_only false" >! $datapath/fg_only.csh
 

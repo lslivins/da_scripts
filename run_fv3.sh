@@ -11,6 +11,18 @@ if [ "$machine" == 'theia' ]; then
    module list
 fi
 
+# workaround for error on theia
+# 'Unable to allocate shared memory for intra-node messaging'
+n=1
+cat $HOSTFILE | uniq > nodes_${charnanal}
+ncount=`wc -l nodes_${charnanal} | cut -f1 -d " "`
+while [ $n -le $ncount ]; do
+ node=`head -$n nodes_${charnanal} | tail -1`
+ ssh -n $node "/bin/rm -rf /dev/shm/*"
+ n=$((n+1))
+done
+/bin/rm -f nodes_${charnanal}
+
 export VERBOSE=${VERBOSE:-"NO"}
 if [ "$VERBOSE" == "YES" ]; then
  set -x
@@ -18,6 +30,7 @@ fi
 
 nmem=`echo $charnanal | cut -f3 -d"m"`
 export imem=10#$nmem
+charnanal2=`printf %02i $imem`
 export ISEED_SPPT=$((analdate*1000 + imem*10 + 4))
 export ISEED_SKEB=$((analdate*1000 + imem*10 + 5))
 export ISEED_SHUM=$((analdate*1000 + imem*10 + 6))
@@ -84,8 +97,9 @@ if [ $? -ne 0 ]; then
 fi
 /bin/cp -f $enkfscripts/diag_table .
 /bin/cp -f $enkfscripts/nems.configure .
-# for diag table, insert correct starting time.
+# insert correct starting time and output interval in diag_table template.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
+sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
 /bin/cp -f $enkfscripts/field_table .
 /bin/cp -f $enkfscripts/data_table . 
 /bin/rm -rf RESTART
@@ -231,34 +245,9 @@ else
    fi
 fi
 
-snoid='SNOD'
-
-# Turn off snow analysis if it has already been used.
-# (snow analysis only available once per day at 18z)
-fntsfa=${obs_datapath}/bufr_${analdate}/gdas1.t${houra}z.sstgrb
-fnacna=${obs_datapath}/bufr_${analdate}/gdas1.t${houra}z.engicegrb
-fnsnoa=${obs_datapath}/bufr_${analdate}/gdas1.t${houra}z.snogrb
-fnsnog=${obs_datapath}/bufr_${analdatem1}/gdas1.t${hourprev}z.snogrb
-nrecs_snow=`$WGRIB ${fnsnoa} | grep -i $snoid | wc -l`
-if [ $nrecs_snow -eq 0 ]; then
-   # no snow depth in file, use model
-   fnsnoa='        ' # no input file
-   fsnol=99999 # use model value
-   echo "no snow depth in snow analysis file, use model"
-else
-   # snow depth in file, but is it current?
-   if [ `$WGRIB -4yr ${fnsnoa} 2>/dev/null|grep -i $snoid |\
-         awk -F: '{print $3}'|awk -F= '{print $2}'` -le \
-        `$WGRIB -4yr ${fnsnog} 2>/dev/null |grep -i $snoid  |\
-               awk -F: '{print $3}'|awk -F= '{print $2}'` ] ; then
-      echo "no snow analysis, use model"
-      fnsnoa='        ' # no input file
-      fsnol=99999 # use model value
-   else
-      echo "current snow analysis found in snow analysis file, replace model"
-      fsnol=0 # use analysis value
-   fi
-fi
+fntsfa=${sstpath}/${yeara}/sst_${charnanal2}.grib
+fnacna=${sstpath}/${yeara}/icec_${charnanal2}.grib
+fnsnoa='        ' # no input file, use model snow
 
 ls -l 
 
@@ -506,7 +495,7 @@ cat > input.nml <<EOF
   fsmcl(2) = 60,
   fsmcl(3) = 60,
   fsmcl(4) = 60,
-  fsnol = ${fsnol},
+  fsnol=99999,
 /
 
 &fv_grid_nml
@@ -566,6 +555,7 @@ while [ $fh -le $FHMAX ]; do
   fh=$[$fh+$FHOUT]
 done
 
+ls -l *nc
 ls -l RESTART
 # copy restart file to INPUT directory for next analysis time.
 /bin/rm -rf ${datapathp1}/${charnanal}/RESTART ${datapathp1}/${charnanal}/INPUT
@@ -578,6 +568,9 @@ for file in ${datestring}*nc; do
    /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
 done
 cd ..
+# also move history files (these will be over-written when the model runs next).
+mv fv3*history*nc ${datapathp1}/${charnanal}
+ls -l ${datapathp1}/${charnanal}
 ls -l ${datapathp1}/${charnanal}/INPUT
 
 # remove symlinks from INPUT directory
@@ -587,4 +580,5 @@ cd ..
 /bin/rm -rf RESTART # don't need RESTART dir anymore.
 
 echo "all done at `date`"
+
 exit 0
