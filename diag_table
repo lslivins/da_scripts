@@ -22,8 +22,8 @@ YYYY MM DD HH 0 0
 "dynamics" "zsurf"     "zs"        "fv3_history" "all" .false. "none" 2
 "dynamics" "ps"        "ps"        "fv3_history" "all" .false. "none" 2
 "dynamics" "pfhy"      "pfhy"      "fv3_history" "all" .false. "none" 2
-"dynamics" "ucomp"      "ucomp"    "fv3_history" "all" .false. "none" 2
-"dynamics" "vcomp"      "vcomp"    "fv3_history" "all" .false. "none" 2
+#"dynamics" "ucomp"      "ucomp"    "fv3_history" "all" .false. "none" 2
+#"dynamics" "vcomp"      "vcomp"    "fv3_history" "all" .false. "none" 2
 "dynamics" "temp"      "temp"      "fv3_history" "all" .false. "none" 2
 "dynamics" "sphum"     "sphum"     "fv3_history" "all" .false. "none" 2
 #"dynamics" "liq_wat"   "clwmr"     "fv3_history" "all" .false. "none" 2
