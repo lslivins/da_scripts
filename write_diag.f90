@@ -49,14 +49,3 @@ subroutine write_diag(obsfile,nobstot,nproc,idate,statinfo,stattype,oblon,oblat,
  close(iunito)
  deallocate(rdiagbuf,cdiagbuf)
 end subroutine write_diag
-
-subroutine strtoarr(strin, chararr, n_str)
-  integer, intent(in) :: n_str
-  character(len=n_str), intent(in) :: strin
-  integer, intent(out) ::  chararr(n_str+1)
-  chararr = 32 ! space
-  do j=1,n_str
-     chararr(j) = ichar(strin(j:j))
-  enddo
-  chararr(n_str+1) = 124 ! '|'
-end subroutine strtoarr
