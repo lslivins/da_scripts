@@ -18,7 +18,7 @@ grav = 9.80665; rd = 287.05; cp = 1004.6; rv=461.5
 kap1 = (rd/cp)+1.0
 kapr = (cp/rd)
 
-# read from fortran namelist.
+# read from fortran namelist (on every task).
 nml = f90nml.read('psop.nml')
 res = nml['psop_nml']['res']
 date = nml['psop_nml']['date']
@@ -65,57 +65,90 @@ def palt(ps,zs):
    return palt
 
 
-# read pre-computed and pickled stripack triangulation.
+# read pre-computed and pickled stripack triangulation (on root only).
 
-tri = cPickle.load(open(picklefile,'rb'))
-
-# read in ps obs.
-
-olats = []; olons = []; obs = []; zobs = []; times = []; stdevorig = []; bias = []
-stattype = []; statinfo = []
-for line in open(obsfile):
-    statid = line[0:19]
-    statname = line[87:117]
-    obid = line[118:131]
-#   skip first 19 chars in line (contains ob identification string)
-    line = line[20:]
-    #statinfo.append(statid+' '+statname+' '+obid)
-    statinfo.append(obid[-8:]) # only 8 chars allowed
-    try:
-        lon = float(line[6:13])
-        lat = float(line[14:20])
-        ob = float(line[35:41])
-        t = float(line[28:33])
-        zob = float(line[21:26])
-        b = float(line[51:61])
-        err = float(line[61:67])
-        ncepid = int(line[0:3])
-    except ValueError:
-        continue
-    stattype.append(ncepid)
-    olons.append(lon)
-    olats.append(lat)
-    zobs.append(zob)
-    times.append(t)
-    obs.append(ob)
-    bias.append(b)
-    stdevorig.append(err)
-olons = np.radians(np.array(olons))
-olats = np.radians(np.array(olats))
-obs = np.array(obs); times = np.array(times); zobs = np.array(zobs)
-bias = np.array(bias); stdevorig = np.array(stdevorig)
-bias = np.where(bias < 1.e20, bias, 0)
-stattype = np.array(stattype)
 if comm.rank == 0:
-   print 'min/max lons',np.degrees(olons.min()),np.degrees(olons.max())
-   print 'min/max lats',np.degrees(olats.min()),np.degrees(olats.max())
-   print 'min/max obs',obs.min(),obs.max()
-   print 'min/max times',times.min(),times.max()
-   print 'min/max bias',bias.min(),bias.max()
-   print 'min/max zobs',zobs.min(),zobs.max()
-   print 'min/max stdevorig',stdevorig.min(),stdevorig.max()
+    tri = cPickle.load(open(picklefile,'rb'))
+else:
+    tri = None
+tri = comm.bcast(tri, root=0)
+
+# read in ps obs (on root only).
+
+if comm.rank == 0:
+    olats = []; olons = []; obs = []; zobs = []; times = []; stdevorig = []; bias = []
+    stattype = []; statinfo = []
+    f = open(obsfile)
+    for line in f:
+        statid = line[0:19]
+        statname = line[87:117]
+        obid = line[118:131]
+    #   skip first 19 chars in line (contains ob identification string)
+        line = line[20:]
+        #statinfo.append(statid+' '+statname+' '+obid) # 64 chars
+        statinfo.append(obid[-8:]) # only 8 chars allowed without mods to EnKF
+        try:
+            lon = float(line[6:13])
+            lat = float(line[14:20])
+            ob = float(line[35:41])
+            t = float(line[28:33])
+            zob = float(line[21:26])
+            b = float(line[51:61])
+            err = float(line[61:67])
+            ncepid = int(line[0:3])
+        except ValueError:
+            continue
+        stattype.append(ncepid)
+        olons.append(lon)
+        olats.append(lat)
+        zobs.append(zob)
+        times.append(t)
+        obs.append(ob)
+        bias.append(b)
+        stdevorig.append(err)
+    f.close()
+    olons = np.radians(np.array(olons))
+    olats = np.radians(np.array(olats))
+    obs = np.array(obs); times = np.array(times); zobs = np.array(zobs)
+    bias = np.array(bias); stdevorig = np.array(stdevorig)
+    bias = np.where(bias < 1.e20, bias, 0)
+    stattype = np.array(stattype)
+    nobs = len(obs)
+    print 'nobs = ',nobs
+    print 'min/max lons',np.degrees(olons.min()),np.degrees(olons.max())
+    print 'min/max lats',np.degrees(olats.min()),np.degrees(olats.max())
+    print 'min/max obs',obs.min(),obs.max()
+    print 'min/max times',times.min(),times.max()
+    print 'min/max bias',bias.min(),bias.max()
+    print 'min/max zobs',zobs.min(),zobs.max()
+    print 'min/max stdevorig',stdevorig.min(),stdevorig.max()
+    nobs = comm.bcast(nobs, root=0)
+else:
+    nobs = None; statinfo = []
+    nobs = comm.bcast(nobs, root=0)
+    olats = np.empty(nobs,np.float)
+    olons = np.empty(nobs,np.float)
+    obs = np.empty(nobs,np.float)
+    times = np.empty(nobs,np.float)
+    zobs = np.empty(nobs,np.float)
+    stdevorig = np.empty(nobs,np.float)
+    bias = np.empty(nobs,np.float)
+    stattype = np.empty(nobs,np.int)
+
+#print 'nobs on task %s = %s' % (comm.rank,nobs)
+comm.Bcast(olons,root=0)
+comm.Bcast(olats,root=0)
+comm.Bcast(obs,root=0)
+comm.Bcast(olons,root=0)
+comm.Bcast(olats,root=0)
+comm.Bcast(times,root=0)
+comm.Bcast(bias,root=0)
+comm.Bcast(zobs,root=0)
+comm.Bcast(stdevorig,root=0)
+comm.Bcast(stattype,root=0)
+statinfo = comm.bcast(statinfo, root=0)
 statinfo2 = np.array(statinfo, dtype='c').T
-nobs = len(obs)
+
 iuseob = np.zeros(nobs, np.int8)
 iuseob = np.where(np.logical_and(times >= -3, times <= 3), 1, 0)
 if comm.rank == 0: print nobs-iuseob.sum(),' obs have invalid time'
@@ -125,6 +158,7 @@ iuseob = np.where(np.logical_and(iuseob, np.logical_and(altob >= 850, altob <= 1
 if comm.rank == 0: print nobs_before-iuseob.sum(),' obs have out of range altimeter setting'
 
 # read data from history files.
+# (a different ensemble member is read on each task)
 
 t1 = time.clock()
 psmodel = np.empty((ntimes,6,res,res),np.float64)
@@ -220,10 +254,13 @@ if comm.rank == 0:
         fout.write(stringout)
     fout.close()
 
+# write each ensemble member (one per task)
 stdev = np.where(iuseob == 0, 1.e10, stdev)
 idate = int(date)
 diagfile = "diag_conv_ges.%s_mem%03i" % (idate,nmem)
 write_diag(diagfile,comm.rank,idate,statinfo2,stattype,olons,olats,times,obs,zobs,stdev,stdevorig,anal_ob,zsmodel_interp,bias)
+
+# write ensemble mean on root task
 if comm.rank == 0:
     diagfile = "diag_conv_ges.%s_ensmean" % idate
     write_diag(diagfile,comm.rank,idate,statinfo2,stattype,olons,olats,times,obs,zobs,stdev,stdevorig,ensmean_ob,zsmodel_interp,bias)
