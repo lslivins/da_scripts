@@ -79,31 +79,41 @@ for line in open(obsfile):
     obid = line[118:131]
 #   skip first 19 chars in line (contains ob identification string)
     line = line[20:]
+    #statinfo.append(statid+' '+statname+' '+obid)
+    statinfo.append(obid[-8:]) # only 8 chars allowed
     try:
         lon = float(line[6:13])
         lat = float(line[14:20])
         ob = float(line[35:41])
+        t = float(line[28:33])
+        zob = float(line[21:26])
+        b = float(line[51:61])
+        err = float(line[61:67])
+        ncepid = int(line[0:3])
     except ValueError:
         continue
-    stattype.append(int(line[0:3]))
-    #statinfo.append(statid+' '+statname+' '+obid)
-    statinfo.append(obid[-8:]) # only 8 chars allowed
+    stattype.append(ncepid)
     olons.append(lon)
     olats.append(lat)
-    zobs.append(float(line[21:26]))
-    times.append(float(line[28:33]))
+    zobs.append(zob)
+    times.append(t)
     obs.append(ob)
-    bias.append(float(line[51:61]))
-    stdevorig.append(float(line[61:67]))
+    bias.append(b)
+    stdevorig.append(err)
 olons = np.radians(np.array(olons))
 olats = np.radians(np.array(olats))
-if comm.rank == 0:
-   print 'min/max lons',np.degrees(olons.min()),np.degrees(olons.max())
-   print 'min/max lats',np.degrees(olats.min()),np.degrees(olats.max())
 obs = np.array(obs); times = np.array(times); zobs = np.array(zobs)
 bias = np.array(bias); stdevorig = np.array(stdevorig)
 bias = np.where(bias < 1.e20, bias, 0)
 stattype = np.array(stattype)
+if comm.rank == 0:
+   print 'min/max lons',np.degrees(olons.min()),np.degrees(olons.max())
+   print 'min/max lats',np.degrees(olats.min()),np.degrees(olats.max())
+   print 'min/max obs',obs.min(),obs.max()
+   print 'min/max times',times.min(),times.max()
+   print 'min/max bias',bias.min(),bias.max()
+   print 'min/max zobs',zobs.min(),zobs.max()
+   print 'min/max stdevorig',stdevorig.min(),stdevorig.max()
 statinfo2 = np.array(statinfo, dtype='c').T
 nobs = len(obs)
 iuseob = np.zeros(nobs, np.int8)
