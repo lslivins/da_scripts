@@ -112,7 +112,7 @@ ls -l ${datapath2}/psobfile
 
 echo "compute bias correction..."
 if ($analdate >= `$incdate $analdate_start 12`) then
- time $python ${enkfscripts}/get_biascorr.py ${analdate} ${datapath2}/psobs.txt   &
+ time $python ${enkfscripts}/get_biascorr.py ${analdate} ${datapath2}/psobs.txt 
 else
  # to skip bias correction, use this...
  time $python ${enkfscripts}/rewrite2.py ${datapath2}/psobfile ${datapath2}/psobs.txt $analdate  

@@ -1,4 +1,5 @@
 cd $datapath2
+ls -l ${datapath2}/psobs.txt
 /bin/rm -rf diag*
 ntimes=`expr 1 + \( $FHMAX - $FHMIN \) \/ $FHOUT`
 cat > psop.nml <<EOF
