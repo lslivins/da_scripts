@@ -188,10 +188,10 @@ zsmodel = zsmodel.reshape((6*res*res))
 tmodel = tmodel.reshape((ntimes,6*res*res))
 pmodel = pmodel.reshape((ntimes,6*res*res))
 if comm.rank == 0:
-    print 'min/max ps %s' % member,psmodel.min(), psmodel.max()
-    print 'min/max zs %s' % member,zsmodel.min(), zsmodel.max()
-    print 'min/max t at level %s %s' % (nlev,member), tmodel.min(), tmodel.max()
-    print 'min/max p at level %s %s' % (nlev,member), pmodel.min(), pmodel.max()
+    print 'min/max/mean ps %s' % member,psmodel.min(), psmodel.max(), psmodel.mean()
+    print 'min/max/mean zs %s' % member,zsmodel.min(), zsmodel.max(), zsmodel.mean()
+    print 'min/max/mean t at level %s %s' % (nlev,member), tmodel.min(), tmodel.max(), tmodel.mean()
+    print 'min/max/mean p at level %s %s' % (nlev,member), pmodel.min(), pmodel.max(), pmodel.mean()
     print 'read data from history files took ',time.clock()-t1,' secs'
     
 # interpolate to ob locations.
