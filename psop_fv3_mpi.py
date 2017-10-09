@@ -1,9 +1,13 @@
+"""
+Compute surface pressure forward operator using native grid FV3 history files.
+"""
 from netCDF4 import Dataset
 import numpy as np
 import time, cPickle, sys, os
 from mpi4py import MPI
+# fortran module for writing GSI diagnostic files
 from write_diag import write_diag
-import f90nml
+import f90nml # read fortran namelists.
 
 # mpirun -np 64 /contrib/anaconda/2.3.0/bin/python psop_fv3_mpi.py
 
@@ -12,7 +16,7 @@ nanals = comm.size
 nmem = comm.rank + 1
 member = 'mem%03i' % nmem
 
-# set parameters.
+# set constants.
 rlapse_stdatm = 0.0065
 grav = 9.80665; rd = 287.05; cp = 1004.6; rv=461.5
 kap1 = (rd/cp)+1.0
@@ -38,22 +42,21 @@ else:
     delz_const = 0.001
 datapath = os.path.join(nml['psop_nml']['datapath'],member)
 
-def preduce(ps,tpress,t,zmodel,zob,rlapse):
+def preduce(ps,tpress,t,zmodel,zob):
 # compute MAPS pressure reduction from model to station elevation
 # See Benjamin and Miller (1990, MWR, p. 2100)
 # uses 'effective' surface temperature extrapolated
 # from virtual temp (tv) at tpress mb
-# using specified lapse rate.
+# using US standard atmosphere lapse rate.
 # Avoids diurnal cycle effects that effect 'real' surface temp.
 # ps - surface pressure to reduce.
 # t - virtual temp. at pressure tpress.
 # zmodel - model orographic height.
 # zob - station height
-# rlapse - lapse rate (positive - usually US standard atmosphere)
-   alpha = rd*rlapse/grav
+   alpha = rd*rlapse_stdatm/grav
    # from Benjamin and Miller (http://dx.doi.org/10.1175/1520-0493(1990)118<2099:AASLPR>2.0.CO;2) 
    t0 = t*(ps/tpress)**alpha # eqn 4 from B&M
-   preduce = ps*((t0 + rlapse*(zob-zmodel))/t0)**(1./alpha) # eqn 1 from B&M
+   preduce = ps*((t0 + rlapse_stdatm*(zob-zmodel))/t0)**(1./alpha) # eqn 1 from B&M
    return preduce
 
 def palt(ps,zs):
@@ -83,7 +86,7 @@ if comm.rank == 0:
         statid = line[0:19]
         statname = line[87:117]
         obid = line[118:131]
-    #   skip first 19 chars in line (contains ob identification string)
+        # skip first 19 chars in line (contains ob identification string)
         line = line[20:]
         #statinfo.append(statid+' '+statname+' '+obid) # 64 chars
         statinfo.append(obid[-8:]) # only 8 chars allowed without mods to EnKF
@@ -210,17 +213,14 @@ delt = dtob - idtob.astype(np.float64)
 anal_ob = np.empty(nobs, np.float64)
 anal_obp = np.empty(nobs, np.float64)
 anal_obt = np.empty(nobs, np.float64)
-# assume lapse rate is constant, equal to standard atmosphere value.
-anal_oblapse = rlapse_stdatm*np.ones(nobs, np.float64)
 for nob in range(nobs):
     anal_ob[nob] = (1.-delt[nob])*psmodel_interp[idtob[nob],nob] + delt[nob]*psmodel_interp[idtobp[nob],nob]
     anal_obp[nob] = (1.-delt[nob])*pmodel_interp[idtob[nob],nob] + delt[nob]*pmodel_interp[idtobp[nob],nob]
     anal_obt[nob] = (1.-delt[nob])*tmodel_interp[idtob[nob],nob] + delt[nob]*tmodel_interp[idtobp[nob],nob]
 
 # adjust interpolated model forecast pressure to station height
-anal_ob = preduce(anal_ob, anal_obp, anal_obt, zobs, zsmodel_interp, anal_oblapse)
+anal_ob = preduce(anal_ob, anal_obp, anal_obt, zobs, zsmodel_interp)
 if comm.rank == 0: print 'interpolation %s points took' % nobs,time.clock()-t1,' secs'
-#if comm.rank == 0: print 'min/max interpolated field:',psmodel_interp.min(), psmodel_interp.max()
 
 zdiff = np.abs(zobs - zsmodel_interp)
 # adjust ob error based on diff between station and model height.
@@ -235,16 +235,11 @@ if comm.rank == 0: print nobs_before-iuseob.sum(),' obs have too large an orogra
 ensmean_ob = np.zeros(anal_ob.shape, anal_ob.dtype)
 comm.Reduce(anal_ob, ensmean_ob, op=MPI.SUM, root=0)
 
-#ominusf = (obs-anal_ob)[iuseob.astype(np.bool)]
-#print ominusf.shape,iuseob.sum()
-#print '%s rms O-F' % member,np.sqrt((ominusf**2).mean())
-
 olons = np.degrees(olons); olats = np.degrees(olats)
 if comm.rank == 0:
     # write out text file.
     ensmean_ob = ensmean_ob/nanals
     ominusf = (obs-ensmean_ob)[iuseob.astype(np.bool)]
-    #print ominusf.shape,iuseob.sum()
     print 'ens mean rms O-F for %s obs' % iuseob.sum(),np.sqrt((ominusf**2).mean())
     
     fout = open('psobs_prior.txt','w')
