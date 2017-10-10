@@ -35,7 +35,7 @@ YYYY MM DD HH 0 0
 "dynamics" "t_plev"    "t_plev"    "fv3_history" "all" .false. "none" 2
 "dynamics" "h_plev"    "h_plev"    "fv3_history" "all" .false. "none" 2
 "dynamics" "q_plev"    "q_plev"    "fv3_history" "all" .false. "none" 2
-"dynamics" "omg_plev"  "omg_plev"  "fv3_history" "all" .false. "none" 2
+#"dynamics" "omg_plev"  "omg_plev"  "fv3_history" "all" .false. "none" 2
 
 "gfs_phys",  "ALBDOsfc",      "albdo",     "fv3_history2d",         "all",  .false.,  "none",  2
 "gfs_phys",  "cnvprcp",       "cprat",     "fv3_history2d",         "all",  .false.,  "none",  2

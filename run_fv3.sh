@@ -537,7 +537,8 @@ fi
 
 ls -l *nemsio*
 # rename nemsio files.
-fh=$FHMIN
+#fh=$FHMIN
+fh=0
 while [ $fh -le $FHMAX ]; do
   fh2=`expr $fh + $FHOFFSET`
   charfhr="fhr"`printf %02i $fh`

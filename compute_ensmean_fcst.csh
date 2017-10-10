@@ -3,7 +3,7 @@
 if ($machine == 'wcoss') then
    module load nco-gnu-sandybridge
 else
-   module load nco
+   module load nco/4.6.0
 endif
 setenv HOSTFILE ${datapath2}/machinesx
 set NODES=`wc -l $HOSTFILE | cut -f1 -d " "`
@@ -11,7 +11,8 @@ set NODES=`wc -l $HOSTFILE | cut -f1 -d " "`
 cd ${datapath2}
 
 echo "compute ensemble mean nemsio files `date`"
-set fh=${FHMIN}
+#set fh=${FHMIN}
+set fh=0
 while ($fh <= $FHMAX)
 
   set charfhr="fhr`printf %02i $fh`"
@@ -102,5 +103,7 @@ if ( $fg_only == 'false') then
    echo "done computing ensemble mean history files `date`"
 endif
 endif
+# lossy compression: ncks -4 --ppc default=5 -O
+# lossless: ncks -4 -L 5 -O
 
 exit 0
