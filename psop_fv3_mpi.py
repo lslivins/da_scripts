@@ -42,20 +42,23 @@ else:
     delz_const = 0.001
 datapath = os.path.join(nml['psop_nml']['datapath'],member)
 
-def preduce(ps,tpress,t,zmodel,zob):
+def preduce(ps,tpress,tv,zmodel,zob):
 # compute MAPS pressure reduction from model to station elevation
 # See Benjamin and Miller (1990, MWR, p. 2100)
 # uses 'effective' surface temperature extrapolated
-# from virtual temp (tv) at tpress mb
+# from virtual temp tv at pressure tpress 
 # using US standard atmosphere lapse rate.
-# Avoids diurnal cycle effects that effect 'real' surface temp.
-# ps - surface pressure to reduce.
-# t - virtual temp. at pressure tpress.
-# zmodel - model orographic height.
-# zob - station height
+# Avoids diurnal cycle effects that affect actual surface temp.
+# Arguments:
+# ps - surface pressure to reduce (mb).
+# tpress - pressure to extrapolate tv down to surface from (mb).
+# t - virtual temp. at pressure tpress (positive, K/km).
+# zmodel - model orographic height (m).
+# zob - station height (m).
+# Constants: rd, rlapse_stdatm, grav
    alpha = rd*rlapse_stdatm/grav
    # from Benjamin and Miller (http://dx.doi.org/10.1175/1520-0493(1990)118<2099:AASLPR>2.0.CO;2) 
-   t0 = t*(ps/tpress)**alpha # eqn 4 from B&M
+   t0 = tv*(ps/tpress)**alpha # eqn 4 from B&M
    preduce = ps*((t0 + rlapse_stdatm*(zob-zmodel))/t0)**(1./alpha) # eqn 1 from B&M
    return preduce
 
