@@ -1,0 +1,12 @@
+#PBS -l nodes=32:ppn=24
+#PBS -l walltime=1:00:00
+#PBS -A gsienkf
+##PBS -A hybrid   
+##PBS -q debug
+#PBS -N C192_iau_psonly
+#PBS -S /bin/bash
+#PBS -o C192_iau_psonly.stdout
+#PBS -e C192_iau_psonly.stderr
+export NODES=32
+export corespernode=24
+export machine='theia'
