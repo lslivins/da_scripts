@@ -13,15 +13,17 @@ fi
 
 # workaround for error on theia
 # 'Unable to allocate shared memory for intra-node messaging'
-n=1
-cat $HOSTFILE | uniq > nodes_${charnanal}
-ncount=`wc -l nodes_${charnanal} | cut -f1 -d " "`
-while [ $n -le $ncount ]; do
- node=`head -$n nodes_${charnanal} | tail -1`
- ssh -n $node "/bin/rm -rf /dev/shm/*"
- n=$((n+1))
-done
-/bin/rm -f nodes_${charnanal}
+if [ "$machine" == 'theia' ]; then
+   n=1
+   cat $HOSTFILE | uniq > nodes_${charnanal}
+   ncount=`wc -l nodes_${charnanal} | cut -f1 -d " "`
+   while [ $n -le $ncount ]; do
+    node=`head -$n nodes_${charnanal} | tail -1`
+    ssh -n $node "/bin/rm -rf /dev/shm/*"
+    n=$((n+1))
+   done
+   /bin/rm -f nodes_${charnanal}
+fi
 
 export VERBOSE=${VERBOSE:-"NO"}
 if [ "$VERBOSE" == "YES" ]; then
@@ -338,7 +340,7 @@ cat > input.nml <<EOF
 
 &fms_nml
   clock_grain = "ROUTINE",
-  domains_stack_size = 460800,
+  domains_stack_size = 921600,
   print_memory_usage = F,
 /
 
@@ -456,6 +458,7 @@ cat > input.nml <<EOF
   debug          = F
   nstf_name      = 0
   cdmbgwd = ${cdmbgwd}
+  psautco = ${psautco}
   iaufhrs = ${iaufhrs}
   iau_delthrs = ${iaudelthrs}
   iau_inc_files = ${iau_inc_files}
