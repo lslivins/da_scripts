@@ -15,5 +15,10 @@ cat > psop.nml <<EOF
    meshfile = '${enkfscripts}/C${RES}_grid.pickle'
 /
 EOF
-mpirun -np $nanals $python ${enkfscripts}/psop_fv3_mpi.py
+# these are set in main.csh
+#export nprocs=$nanals
+#export HOSTFILE=${datapath2}/machinesx
+#export OMP_NUM_THREADS=1
+export PGM="$python ${enkfscripts}/psop_fv3_mpi.py"
+sh ${enkfscripts}/runmpi
 ls -l diag_conv_ges*

@@ -95,13 +95,15 @@ export lastndays=60
 # lo-res
 export fg_proc=48 # number of total cores allocated to each enkf fg ens member. 
 export fg_threads=1 # ens fcst threads
-export fcst_mpi_tasks=42 # number of mpi tasks used to run each model instance (6 are for IO)
-export layout="2, 3" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fcst_mpi_tasks-6)/fg_threads)
+export write_tasks=6 # write tasks
+export fcst_mpi_tasks=`expr $fg_proc - $write_tasks` # number of mpi tasks used to run each model instance ($write_tasks  are for IO)
+export layout="2, 3" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=$fcst_mpi_tasks/fg_threads)
 # quilt=.false. use this
 #export fcst_mpi_tasks=48 # number of mpi tasks used to run each model instance 
 #export layout="2, 4" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=$fcst_mpi_tasks/fg_threads)
 export RES=96  
 export cdmbgwd="0.125,3.0"
+export psautco="2.0d-4,2.0d-4"
 export fv_sg_adj=1800
 export dt_atmos=900
 export k_split=1
@@ -135,8 +137,8 @@ export SKEB_NPASS=30
 export SKEB_VDOF=5
 
 # Assimilation parameters
-export enkf_threads=2 
-export gsi_control_threads=2
+export enkf_threads=1 
+export gsi_control_threads=1
 export JCAP=126 
 export LONB=384   
 export LATB=190  
