@@ -52,7 +52,7 @@ def preduce(ps,tpress,tv,zmodel,zob):
 # Arguments:
 # ps - surface pressure to reduce (mb).
 # tpress - pressure to extrapolate tv down to surface from (mb).
-# t - virtual temp. at pressure tpress (positive, K/km).
+# t - virtual temp. at pressure tpress (K).
 # zmodel - model orographic height (m).
 # zob - station height (m).
 # Constants: rd, rlapse_stdatm, grav
