@@ -81,7 +81,7 @@ cat <<EOF1 >! enkf.nml
   use_qsatensmean=$use_qsatensmean,
   reducedgrid=$reducedgrid,nlevs=$LEVS,nanals=$nanals,deterministic=$deterministic,
   npefiles=0,lobsdiag_forenkf=.false.write_spread_diag=.true.,
-  sortinc=$sortinc,univaroz=$univaroz,massbal_adjust=$massbal_adjust,nhr_anal=$iaufhrs,nhr_state=$enkfstatefhrs,
+  sortinc=$sortinc,univaroz=$univaroz,nhr_anal=$iaufhrs,nhr_state=$enkfstatefhrs,
   covl_minfact=$covl_minfact,covl_efold=$covl_efold,
   use_gfs_nemsio=.true.,adp_anglebc=.true.,angord=4,newpc4pred=.true.,use_edges=.false.,emiss_bc=.true.,biasvar=-500,write_spread_diag=.true.,nobsl_max=$nobsl_max
  /
