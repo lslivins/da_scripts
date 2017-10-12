@@ -17,10 +17,9 @@ level = 500
 res = 96   
 nlons = 240; nlats = 121
 latbound = 21 # boundary between tropics and extra-tropics
-fixfv3 = '/scratch4/NCEPDEV/global/save/glopara/svn/fv3gfs/fix_fv3'
-datapath = '../C%s_iau_psonly' % res
+datapath = '../../C%s_iau_psonly' % res
 picklefile = 'C%s_grid.pickle' % res
-analfile = '../erainterim/erainterim_1999_%smb_ztuv.grib2' % level
+analfile = '../../erainterim/erainterim_1999_%smb_ztuv.grib2' % level
 
 tri = cPickle.load(open(picklefile,'rb'))
 
