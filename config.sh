@@ -103,7 +103,7 @@ export layout="2, 3" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_
 export RES=96  
 export cdmbgwd="0.125,3.0"
 export psautco="2.0d-4,2.0d-4"
-export fv_sg_adj=86400.
+export fv_sg_adj=900
 export dt_atmos=900
 export k_split=1
 export n_split=6
