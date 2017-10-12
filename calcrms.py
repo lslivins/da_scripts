@@ -40,6 +40,7 @@ grbs = pygrib.open(analfile)
 
 rmsnhall=[];rmsshall=[];rmstrall=[];rmsglall=[]
 sprdnhall=[];sprdshall=[];sprdtrall=[];sprdglall=[]
+bias = None
 for date in dates:
     datem1 = dateutils.dateshift(date,6)
     for grb in grbs:
@@ -71,12 +72,17 @@ for date in dates:
     #print latlon_data_mean.shape, latlon_data_mean.min(), latlon_data_mean.max()
     #print latlon_data_sprd.shape, latlon_data_sprd.min(), latlon_data_sprd.max()
     err = verif_data - latlon_data_mean
+    if bias is None:
+        bias = err/len(dates)
+    else:
+        bias += err/len(dates)
     sprd = latlon_data_sprd
     #import matplotlib.pyplot as plt
     #plt.figure()
     #clevs = np.arange(-100,101,10)
     #cs = plt.contourf(olons_deg,olats_deg,err,clevs,cmap=plt.cm.bwr,extend='both')
     #plt.title('error')
+    #plt.colorbar()
     #plt.figure()
     #clevs = np.arange(0,51,5)
     #cs = plt.contourf(olons_deg,olats_deg,sprd,clevs,cmap=plt.cm.hot_r,extend='both')
@@ -105,3 +111,11 @@ rmsgl = np.asarray(rmsglall); sprdnh = np.asarray(sprdglall)
 print '%s-%s %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f %6.2f' %\
 (date1,date2,rmsnh.mean(),rmstr.mean(),rmssh.mean(),rmsgl.mean(),\
 sprdnh.mean(),sprdtr.mean(),sprdsh.mean(),sprdgl.mean())
+
+#import matplotlib.pyplot as plt
+#plt.figure()
+#clevs = np.arange(-50,51,5)
+#cs = plt.contourf(olons_deg,olats_deg,bias,clevs,cmap=plt.cm.bwr,extend='both')
+#plt.title('bias')
+#plt.colorbar()
+#plt.show()
