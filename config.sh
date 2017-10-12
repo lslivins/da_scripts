@@ -88,7 +88,6 @@ export covl_minfact=0.05
 # covl_efold smaller means less reduction of covl as paoverpb -> 1
 export covl_efold=0.2
 export readin_localization=.false.
-export massbal_adjust=.false.
 export lastndays=60
 
 # model parameters for ensemble (rest set in $rungfs)
@@ -104,7 +103,7 @@ export layout="2, 3" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_
 export RES=96  
 export cdmbgwd="0.125,3.0"
 export psautco="2.0d-4,2.0d-4"
-export fv_sg_adj=1800
+export fv_sg_adj=86400.
 export dt_atmos=900
 export k_split=1
 export n_split=6
@@ -258,7 +257,7 @@ fi
 #export OZINFO=${enkfscripts}/global_ozinfo.txt
 # set SATINFO in main.csh
 
-export ANAVINFO=${fixgsi}/global_anavinfo.l64.txt
+export ANAVINFO=${enkfscripts}/global_anavinfo.l64.txt
 export ANAVINFO_ENKF=${ANAVINFO}
 export HYBENSINFO=${fixgsi}/global_hybens_info.l64.txt
 export CONVINFO=${fixgsi}/global_convinfo.txt

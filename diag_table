@@ -3,7 +3,7 @@ YYYY MM DD HH 0 0
 
 "fv3x_history",    0,  "hours",  1,  "hours",  "time"
 "fv3_history2d",  0,  "hours",  1,  "hours",  "time"
-"fv3_history",   FHOUT,  "hours",  1,  "hours",  "time"
+"fv3new_history",   FHOUT,  "hours",  1,  "hours",  "time"
 
 "gfs_dyn",     "ucomp",       "ugrd",      "fv3x_history",    "all",  .false.,  "none",  2
 "gfs_dyn",     "vcomp",       "vgrd",      "fv3x_history",    "all",  .false.,  "none",  2
@@ -19,33 +19,33 @@ YYYY MM DD HH 0 0
 "gfs_dyn",     "ps",          "pressfc",   "fv3x_history",    "all",  .false.,  "none",  2
 "gfs_dyn",     "hs",          "hgtsfc",    "fv3x_history",    "all",  .false.,  "none",  2
 
-"dynamics" "zsurf"     "zs"        "fv3_history" "all" .false. "none" 2
-"dynamics" "ps"        "ps"        "fv3_history" "all" .false. "none" 2
-"dynamics" "pfhy"      "pfhy"      "fv3_history" "all" .false. "none" 2
-#"dynamics" "ucomp"      "ucomp"    "fv3_history" "all" .false. "none" 2
-#"dynamics" "vcomp"      "vcomp"    "fv3_history" "all" .false. "none" 2
-"dynamics" "temp"      "temp"      "fv3_history" "all" .false. "none" 2
-"dynamics" "sphum"     "sphum"     "fv3_history" "all" .false. "none" 2
-#"dynamics" "liq_wat"   "clwmr"     "fv3_history" "all" .false. "none" 2
-#"dynamics" "o3mr"      "o3mr"      "fv3_history" "all" .false. "none" 2
-#"dynamics" "delz"      "delz"      "fv3_history" "all" .false. "none" 2
-#"dynamics" "w"         "vvel"      "fv3_history" "all" .false. "none" 2
-"dynamics"  "u250"      "u250"        "fv3_history" "all" .false. "none" 2
-"dynamics"  "v250"      "v250"        "fv3_history" "all" .false. "none" 2
-"dynamics"  "t250"      "t250"        "fv3_history" "all" .false. "none" 2
-"dynamics"  "z250"      "z250"        "fv3_history" "all" .false. "none" 2
-"dynamics"  "u850"      "u850"        "fv3_history" "all" .false. "none" 2
-"dynamics"  "v850"      "v850"        "fv3_history" "all" .false. "none" 2
-"dynamics"  "t850"      "t850"        "fv3_history" "all" .false. "none" 2
-"dynamics"  "z850"      "z850"        "fv3_history" "all" .false. "none" 2
-"dynamics"  "u500"      "u500"        "fv3_history" "all" .false. "none" 2
-"dynamics"  "v500"      "v500"        "fv3_history" "all" .false. "none" 2
-"dynamics"  "t500"      "t500"        "fv3_history" "all" .false. "none" 2
-"dynamics"  "z500"      "z500"        "fv3_history" "all" .false. "none" 2
-"dynamics"  "u50"       "u50"         "fv3_history" "all" .false. "none" 2
-"dynamics"  "v50"       "v50"         "fv3_history" "all" .false. "none" 2
-"dynamics"  "t50"       "t50"         "fv3_history" "all" .false. "none" 2
-"dynamics"  "z50"       "z50"         "fv3_history" "all" .false. "none" 2
+"dynamics" "zsurf"     "zs"        "fv3new_history" "all" .false. "none" 2
+"dynamics" "ps"        "ps"        "fv3new_history" "all" .false. "none" 2
+"dynamics" "pfhy"      "pfhy"      "fv3new_history" "all" .false. "none" 2
+#"dynamics" "ucomp"      "ucomp"    "fv3new_history" "all" .false. "none" 2
+#"dynamics" "vcomp"      "vcomp"    "fv3new_history" "all" .false. "none" 2
+"dynamics" "temp"      "temp"      "fv3new_history" "all" .false. "none" 2
+"dynamics" "sphum"     "sphum"     "fv3new_history" "all" .false. "none" 2
+#"dynamics" "liq_wat"   "clwmr"     "fv3new_history" "all" .false. "none" 2
+#"dynamics" "o3mr"      "o3mr"      "fv3new_history" "all" .false. "none" 2
+#"dynamics" "delz"      "delz"      "fv3new_history" "all" .false. "none" 2
+#"dynamics" "w"         "vvel"      "fv3new_history" "all" .false. "none" 2
+"dynamics"  "u250"      "u250"        "fv3new_history" "all" .false. "none" 2
+"dynamics"  "v250"      "v250"        "fv3new_history" "all" .false. "none" 2
+"dynamics"  "t250"      "t250"        "fv3new_history" "all" .false. "none" 2
+"dynamics"  "z250"      "z250"        "fv3new_history" "all" .false. "none" 2
+"dynamics"  "u850"      "u850"        "fv3new_history" "all" .false. "none" 2
+"dynamics"  "v850"      "v850"        "fv3new_history" "all" .false. "none" 2
+"dynamics"  "t850"      "t850"        "fv3new_history" "all" .false. "none" 2
+"dynamics"  "z850"      "z850"        "fv3new_history" "all" .false. "none" 2
+"dynamics"  "u500"      "u500"        "fv3new_history" "all" .false. "none" 2
+"dynamics"  "v500"      "v500"        "fv3new_history" "all" .false. "none" 2
+"dynamics"  "t500"      "t500"        "fv3new_history" "all" .false. "none" 2
+"dynamics"  "z500"      "z500"        "fv3new_history" "all" .false. "none" 2
+"dynamics"  "u50"       "u50"         "fv3new_history" "all" .false. "none" 2
+"dynamics"  "v50"       "v50"         "fv3new_history" "all" .false. "none" 2
+"dynamics"  "t50"       "t50"         "fv3new_history" "all" .false. "none" 2
+"dynamics"  "z50"       "z50"         "fv3new_history" "all" .false. "none" 2
 
 "gfs_phys",  "ALBDOsfc",      "albdo",     "fv3_history2d",         "all",  .false.,  "none",  2
 "gfs_phys",  "cnvprcp",       "cprat",     "fv3_history2d",         "all",  .false.,  "none",  2

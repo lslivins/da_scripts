@@ -572,8 +572,12 @@ for file in ${datestring}*nc; do
    /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
 done
 cd ..
-# also move history files (these will be over-written when the model runs next).
-mv fv3*history*nc ${datapathp1}/${charnanal}
+# also move history files.
+n=1
+while [ $n -le 6 ]; do
+ /bin/mv -f fv3new_history.tile${n}.nc ${datapathp1}/${charnanal}/fv3_history.tile${n}.nc
+ n=$((n+1))
+done
 ls -l ${datapathp1}/${charnanal}
 ls -l ${datapathp1}/${charnanal}/INPUT
 
