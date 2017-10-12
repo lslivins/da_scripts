@@ -424,7 +424,7 @@ cat > input.nml <<EOF
   fhzero         = ${FHOUT}
   ldiag3d        = F
   fhcyc          = ${FHCYC}
-  nst_anl        = F
+  elv_cor        = F
   use_ufo        = T
   pre_rad        = F
   ncld           = 1
