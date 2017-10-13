@@ -29,8 +29,8 @@ date = nml['psop_nml']['date']
 ntimes = nml['psop_nml']['ntimes']
 fhmin = nml['psop_nml']['fhmin']
 fhout = nml['psop_nml']['fhout']
-nlevt1 = nml['psop_nml']['nlevt1']
-nlevt2 = nml['psop_nml']['nlevt2']
+nlevt1 = nml['psop_nml']['nlevt1'] # T at level nlevt1 extrapolated to surface
+nlevt2 = nml['psop_nml']['nlevt2'] # using lapse rate defined between nlevt1 and nlevt2
 obsfile = nml['psop_nml']['obsfile']
 picklefile = nml['psop_nml']['meshfile']
 if nml['psop_nml'].has_key('zthresh'):
@@ -191,17 +191,15 @@ for ntile in range(1,7,1):
         psmodel[ntime,ntile-1,:,:] = 0.01*nc['ps'][ntime]
         temp1 = nc['temp'][ntime,nlevs-nlevt1,:,:]
         temp2 = nc['temp'][ntime,nlevs-nlevt2,:,:]
-        tmodel[ntime,ntile-1,:,:] = temp1 +\
+        tmodel[ntime,ntile-1,:,:] = temp1 +\ # convert to tv
         (rv/rd-1.0)*nc['sphum'][ntime,nlevs-nlevt1,:,:]
-        #delz = np.zeros((res,res),np.float32)
-        #for k in range(nlevs-nlevt2,nlevs-nlevt1+1):
-        #    delz += 0.5*(nc['delz'][ntime,k+1,:,:]+nc['delz'][ntime,k,:,:])
         temp1 = 0.5*(temp1+nc['temp'][ntime,nlevs-(nlevt1-1),:,:])
         temp2 = 0.5*(temp2+nc['temp'][ntime,nlevs-(nlevt2+1),:,:])
         delz = np.zeros((res,res),np.float32)
         for k in range(nlevs-nlevt2,nlevs-nlevt1+1):
             delz += nc['delz'][ntime,k,:,:]
         lapsemodel[ntime,ntile-1,:,:] = (temp1-temp2)/delz 
+        # need nonhydrostatic model, or else delz and pfnh not defined
         pmodel[ntime,ntile-1,:,:] = 0.01*nc['pfnh'][ntime,nlevs-nlevt1,:,:]
     zsmodel[ntile-1,:,:] = nc['zs'][:]
 psmodel = psmodel.reshape((ntimes,6*res*res))
