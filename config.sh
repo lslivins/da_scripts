@@ -103,6 +103,18 @@ export layout="2, 3" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_
 export RES=96  
 export cdmbgwd="0.125,3.0"
 export psautco="2.0d-4,2.0d-4"
+export zhao_mic=T
+if [ $zhao_mic == "F" ]; then
+   export ncld=5
+   export nwat=6
+   export cal_pre=F
+   export dnats=1
+else
+   export ncld=1
+   export nwat=2
+   export cal_pre=T
+   export dnats=0
+fi
 export fv_sg_adj=1800
 export dt_atmos=900
 export k_split=1

@@ -375,10 +375,10 @@ cat > input.nml <<EOF
   p_fac = 0.1,
   k_split  = ${k_split:-2},
   n_split  = ${n_split:-6},
-  nwat = 2,
+  nwat = ${nwat},
   na_init = ${na_init},
   d_ext = 0.0,
-  dnats = 0,
+  dnats = ${dnats},
   fv_sg_adj = ${fv_sg_adj:-600},
   d2_bg = 0.0,
   nord = 2,
@@ -427,8 +427,8 @@ cat > input.nml <<EOF
   elv_cor        = F
   use_ufo        = T
   pre_rad        = F
-  ncld           = 1
-  zhao_mic       = T
+  ncld           = ${ncld}
+  zhao_mic       = ${zhao_mic}
   pdfcld         = F
   fhswr          = 3600.
   fhlwr          = 3600.
@@ -443,7 +443,7 @@ cat > input.nml <<EOF
   swhtr          = T
   cnvgwd         = T
   shal_cnv       = T
-  cal_pre        = T
+  cal_pre        = ${cal_pre}
   redrag         = T
   dspheat        = F
   hybedmf        = T
