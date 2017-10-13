@@ -121,7 +121,11 @@ endif
 
 # run forward operator
 echo "$analdate starting forward operator computation `date`"
-sh ${enkfscripts}/psop_fv3.sh >&!  ${current_logdir}/compute_hop.out
+if ($hydrostatic == "T") then
+   sh ${enkfscripts}/psop_fv3.sh   >&! ${current_logdir}/compute_hop.out
+else
+   sh ${enkfscripts}/psop_fv3_2.sh >&! ${current_logdir}/compute_hop.out
+endif
 if ( ! -s ${datapath2}/diag_conv_ges.${analdate}_ensmean || ! -s ${datapath2}/psobs_prior.txt) then
    echo "$analdate computing forward operator failed, exiting..."
    exit 1
