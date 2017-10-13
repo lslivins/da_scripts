@@ -288,7 +288,6 @@ if comm.rank == 0:
         fout.write(stringout)
     fout.close()
 
-raise SystemExit
 # write each ensemble member (one per task)
 stdev = np.where(iuseob == 0, 1.e10, stdev)
 idate = int(date)

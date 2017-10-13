@@ -1,6 +1,6 @@
 cd $datapath2
 ls -l ${datapath2}/psobs.txt
-#/bin/rm -rf diag*
+/bin/rm -rf diag*
 ntimes=`expr 1 + \( $FHMAX - $FHMIN \) \/ $FHOUT`
 cat > psop.nml <<EOF
 &psop_nml
@@ -22,3 +22,4 @@ EOF
 #export OMP_NUM_THREADS=1
 export PGM="$python ${enkfscripts}/psop_fv3_mpi2.py"
 sh ${enkfscripts}/runmpi
+ls -l diag_conv_ges*
