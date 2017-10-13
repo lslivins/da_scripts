@@ -22,13 +22,14 @@ YYYY MM DD HH 0 0
 "dynamics" "zsurf"     "zs"        "fv3new_history" "all" .false. "none" 2
 "dynamics" "ps"        "ps"        "fv3new_history" "all" .false. "none" 2
 "dynamics" "pfhy"      "pfhy"      "fv3new_history" "all" .false. "none" 2
+"dynamics" "pfnh"      "pfnh"      "fv3new_history" "all" .false. "none" 2
 #"dynamics" "ucomp"      "ucomp"    "fv3new_history" "all" .false. "none" 2
 #"dynamics" "vcomp"      "vcomp"    "fv3new_history" "all" .false. "none" 2
 "dynamics" "temp"      "temp"      "fv3new_history" "all" .false. "none" 2
 "dynamics" "sphum"     "sphum"     "fv3new_history" "all" .false. "none" 2
 #"dynamics" "liq_wat"   "clwmr"     "fv3new_history" "all" .false. "none" 2
 #"dynamics" "o3mr"      "o3mr"      "fv3new_history" "all" .false. "none" 2
-#"dynamics" "delz"      "delz"      "fv3new_history" "all" .false. "none" 2
+"dynamics" "delz"      "delz"      "fv3new_history" "all" .false. "none" 2
 #"dynamics" "w"         "vvel"      "fv3new_history" "all" .false. "none" 2
 "dynamics"  "u250"      "u250"        "fv3new_history" "all" .false. "none" 2
 "dynamics"  "v250"      "v250"        "fv3new_history" "all" .false. "none" 2
