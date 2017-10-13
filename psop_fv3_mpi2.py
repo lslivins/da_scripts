@@ -191,7 +191,8 @@ for ntile in range(1,7,1):
         psmodel[ntime,ntile-1,:,:] = 0.01*nc['ps'][ntime]
         temp1 = nc['temp'][ntime,nlevs-nlevt1,:,:]
         temp2 = nc['temp'][ntime,nlevs-nlevt2,:,:]
-        tmodel[ntime,ntile-1,:,:] = temp1 +\ # convert to tv
+        # convert temp1 to tv
+        tmodel[ntime,ntile-1,:,:] = temp1 +\ 
         (rv/rd-1.0)*nc['sphum'][ntime,nlevs-nlevt1,:,:]
         temp1 = 0.5*(temp1+nc['temp'][ntime,nlevs-(nlevt1-1),:,:])
         temp2 = 0.5*(temp2+nc['temp'][ntime,nlevs-(nlevt2+1),:,:])
