@@ -184,7 +184,10 @@ for ntile in range(1,7,1):
         psmodel[ntime,ntile-1,:,:] = 0.01*nc['ps'][ntime]
         tmodel[ntime,ntile-1,:,:] = nc['temp'][ntime,nlevs-nlev,:,:] +\
         (rv/rd-1.0)*nc['sphum'][ntime,nlevs-nlev,:,:]
-        pmodel[ntime,ntile-1,:,:] = 0.01*nc['pfhy'][ntime,nlevs-nlev,:,:]
+        try:
+            pmodel[ntime,ntile-1,:,:] = 0.01*nc['pfhy'][ntime,nlevs-nlev,:,:]
+        except:
+            pmodel[ntime,ntile-1,:,:] = 0.01*nc['pfnh'][ntime,nlevs-nlev,:,:]
     zsmodel[ntile-1,:,:] = nc['zs'][:]
 psmodel = psmodel.reshape((ntimes,6*res*res))
 zsmodel = zsmodel.reshape((6*res*res))
