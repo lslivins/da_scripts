@@ -102,7 +102,11 @@ fi
 # insert correct starting time and output interval in diag_table template.
 sed -i -e "s/YYYY MM DD HH/${year} ${mon} ${day} ${hour}/g" diag_table
 sed -i -e "s/FHOUT/${FHOUT}/g" diag_table
+if [ "$zhao_mic" == 'T' ]; then
 /bin/cp -f $enkfscripts/field_table .
+else
+/bin/cp -f $enkfscripts/field_table_ncld5 field_table
+fi
 /bin/cp -f $enkfscripts/data_table . 
 /bin/rm -rf RESTART
 mkdir -p RESTART
@@ -269,8 +273,9 @@ else
 fi
 
 cat > model_configure <<EOF
+print_esmf:              .true.
 total_member:            1
-PE_MEMBER01:             ${fcst_mpi_tasks}
+PE_MEMBER01:             ${fg_proc}
 start_year:              ${year}
 start_month:             ${mon}
 start_day:               ${day}
@@ -289,7 +294,7 @@ ncores_per_node:         ${corespernode}
 restart_interval:        ${FHRESTART}
 quilting:                .true.
 write_groups:            1
-write_tasks_per_group:   6
+write_tasks_per_group:   ${write_tasks}
 num_files:               2
 filename_base:           'dyn' 'phy'
 output_grid:             'gaussian_grid'
@@ -464,6 +469,56 @@ cat > input.nml <<EOF
   iau_inc_files = ${iau_inc_files}
 /
 
+&gfdl_cloud_microphysics_nml
+  sedi_transport = .true.
+  do_sedi_heat = .false.
+  rad_snow = .true.
+  rad_graupel = .true.
+  rad_rain = .true.
+  const_vi = .F.
+  const_vs = .F.
+  const_vg = .F.
+  const_vr = .F.
+  vi_max = 1.
+  vs_max = 2.
+  vg_max = 12.
+  vr_max = 12.
+  qi_lim = 1.
+  prog_ccn = .false.
+  do_qa = .true.
+  fast_sat_adj = .true.
+  tau_l2v = 300.
+  tau_l2v = 225.
+  tau_v2l = 150.
+  tau_g2v = 900.
+  rthresh = 10.e-6  ! This is a key parameter for cloud water
+  dw_land  = 0.16
+  dw_ocean = 0.10
+  ql_gen = 1.0e-3
+  ql_mlt = 1.0e-3
+  qi0_crt = 8.0E-5
+  qs0_crt = 1.0e-3
+  tau_i2s = 1000.
+  c_psaci = 0.05
+  c_pgacs = 0.01
+  rh_inc = 0.30
+  rh_inr = 0.30
+  rh_ins = 0.30
+  ccn_l = 300.
+  ccn_o = 100.
+  c_paut = 0.5
+  c_cracw = 0.8
+  use_ppm = .false.
+  use_ccn = .true.
+  mono_prof = .true.
+  z_slope_liq  = .true.
+  z_slope_ice  = .true.
+  de_ice = .false.
+  fix_negative = .true.
+  icloud_f = 1
+  mp_time = 150.
+/
+
 &nggps_diag_nml
   fdiag = ${FHOUT}
 /
@@ -528,7 +583,7 @@ ls -l INPUT
 
 # run model
 export PGM=$FCSTEXEC
-export nprocs=$fcst_mpi_tasks
+export nprocs=$fg_proc
 echo "start running model `date`"
 sh ${enkfscripts}/runmpi
 if [ $? -ne 0 ]; then
