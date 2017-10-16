@@ -31,7 +31,7 @@ if [ "$VERBOSE" == "YES" ]; then
 fi
 
 nmem=`echo $charnanal | cut -f3 -d"m"`
-nmem=(( 10#$nmem )) # convert to decimal (remove leading zeros)
+nmem=$(( 10#$nmem )) # convert to decimal (remove leading zeros)
 charnanal2=`printf %02i $nmem`
 export ISEED_SPPT=$((analdate*1000 + nmem*10 + 4))
 export ISEED_SKEB=$((analdate*1000 + nmem*10 + 5))
