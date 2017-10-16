@@ -92,14 +92,16 @@ export lastndays=60
 
 # model parameters for ensemble (rest set in $rungfs)
 # lo-res
-export fg_proc=60 # number of total cores allocated to each enkf fg ens member. 
-export fg_threads=1 # ens fcst threads
-export write_tasks=6 # write tasks
-export layout="3, 3" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc-6)/fg_threads)
-#export fg_proc=48 # number of total cores allocated to each enkf fg ens member. 
+#export fg_proc=60 # number of total cores allocated to each enkf fg ens member. 
 #export fg_threads=1 # ens fcst threads
-#export write_tasks=12 # write tasks
-#export layout="2, 3" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc-6)/fg_threads)
+#export write_groups=1
+#export write_tasks=6 # write tasks
+#export layout="3, 3" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc-6)/fg_threads)
+export fg_proc=48 # number of total cores allocated to each enkf fg ens member. 
+export fg_threads=1 # ens fcst threads
+export write_groups=2
+export write_tasks=6 # write tasks
+export layout="2, 3" # layout_x,layout_y (total # mpi tasks = $layout_x*$layout_y*6=($fg_proc-6)/fg_threads)
 export RES=96  
 export cdmbgwd="0.125,3.0"
 export psautco="2.0d-4,2.0d-4"

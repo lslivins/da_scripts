@@ -32,7 +32,7 @@ fi
 
 nmem=`echo $charnanal | cut -f3 -d"m"`
 export imem=10#$nmem
-charnanal2=`printf %02i $imem`
+charnanal2=`printf %02i $nmem#0`
 export ISEED_SPPT=$((analdate*1000 + imem*10 + 4))
 export ISEED_SKEB=$((analdate*1000 + imem*10 + 5))
 export ISEED_SHUM=$((analdate*1000 + imem*10 + 6))
@@ -293,7 +293,7 @@ use_hyper_thread:        F
 ncores_per_node:         ${corespernode}
 restart_interval:        ${FHRESTART}
 quilting:                .true.
-write_groups:            1
+write_groups:            ${write_groups}
 write_tasks_per_group:   ${write_tasks}
 num_files:               2
 filename_base:           'dyn' 'phy'
