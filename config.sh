@@ -125,16 +125,16 @@ if [ $hydrostatic == 'T' ];  then
    export hord_mt=10
    export hord_vt=10
    export hord_tm=10
-   export hord_dp=10
+   export hord_dp=-10
    export vtdm4=0.05
    export consv_te=0
 else
    export fv3exec='fv3-nonhydro.exe'
-   export hord_mt=6
-   export hord_vt=6
-   export hord_tm=6
-   export hord_dp=6
-   export vtdm4=0.02
+   export hord_mt=5
+   export hord_vt=5
+   export hord_tm=5
+   export hord_dp=-5
+   export vtdm4=0.06
    export consv_te=1
 fi
 
