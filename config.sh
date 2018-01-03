@@ -1,7 +1,7 @@
 echo "running on $machine using $NODES nodes"
 ulimit -s unlimited
 
-export exptname=C384C128_test_iau
+export exptname=C128_convonly
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia.
@@ -12,7 +12,7 @@ if [ "$machine" == 'theia' ]; then
      exit 1
    fi
 fi
-#export KMP_AFFINITY=disabled
+export KMP_AFFINITY=disabled
 
 export fg_gfs="run_ens_fv3.csh"
 export ensda="enkf_run.csh"
@@ -21,8 +21,8 @@ export rungfs='run_fv3.sh' # ensemble forecast
 
 export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
-export controlanal='true' # use gsi hybrid (if false, pure enkf is used)
-export controlfcst='true' # if true, run dual-res setup with single high-res control
+export controlanal='false' # use gsi hybrid (if false, pure enkf is used)
+export controlfcst='false' # if true, run dual-res setup with single high-res control
 export cleanup_fg='true'
 export cleanup_ensmean='true'
 export cleanup_anal='true'
@@ -41,7 +41,7 @@ export replay_run_observer='false' # run observer on replay forecast
 # full ensemble should be saved to HPSS (returns 0 if 
 # HPSS save should be done)
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
-export run_long_fcst="true"  # spawn a longer control forecast at 00 and 12 UTC
+export run_long_fcst="false"  # spawn a longer control forecast at 00 and 12 UTC
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
@@ -65,32 +65,28 @@ elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f1/unswept/${USER}/fv3_reanl
    export datadir=$basedir
    export hsidir="/2year/BMC/gsienkf/whitaker/gaea/${exptname}"
-elif [ "$machine" == 'cori' ]; then
-   export basedir=${SCRATCH}
-   export datadir=$basedir
-   export hsidir="fv3_reanl/${exptname}"
 else
-   echo "machine must be 'wcoss', 'theia', 'gaea' or 'cori', got $machine"
+   echo "machine must be 'wcoss', 'theia', or 'gaea', got $machine"
    exit 1
 fi
 export datapath="${datadir}/${exptname}"
 export logdir="${datadir}/logs/${exptname}"
-export corrlengthnh=1250
-export corrlengthtr=1250
-export corrlengthsh=1250
-export lnsigcutoffnh=1.25
-export lnsigcutofftr=1.25
-export lnsigcutoffsh=1.25
-export lnsigcutoffpsnh=1.25
-export lnsigcutoffpstr=1.25
-export lnsigcutoffpssh=1.25
-export lnsigcutoffsatnh=1.25  
-export lnsigcutoffsattr=1.25  
-export lnsigcutoffsatsh=1.25  
+export corrlengthnh=1500
+export corrlengthtr=1500
+export corrlengthsh=1500
+export lnsigcutoffnh=1.5
+export lnsigcutofftr=1.5
+export lnsigcutoffsh=1.5
+export lnsigcutoffpsnh=3.0
+export lnsigcutoffpstr=3.0
+export lnsigcutoffpssh=3.0
+export lnsigcutoffsatnh=3.0   
+export lnsigcutoffsattr=3.0   
+export lnsigcutoffsatsh=3.0   
 export obtimelnh=1.e30       
 export obtimeltr=1.e30       
 export obtimelsh=1.e30       
-export readin_localization=.true.
+export readin_localization=.false.
 export massbal_adjust=.false.
 
 # resolution of control and ensmemble.
@@ -320,27 +316,32 @@ export iassim_order=0
 
 export covinflatemax=1.e2
 export covinflatemin=1.0                                            
-export analpertwtnh=0.85
-export analpertwtsh=0.85
-export analpertwttr=0.85
-export pseudo_rh=.true.
+export analpertwtnh=0.75
+export analpertwtsh=0.75
+export analpertwttr=0.75
+export pseudo_rh=.false.
 export use_qsatensmean=.true.
                                                                     
-export letkf_flag=.true.
+export letkf_flag=.false.
 export nobsl_max=10000
-export sprd_tol=1.e30
-export varqc=.false.
-export huber=.false.
-export zhuberleft=1.e10
-export zhuberright=1.e10
+export sprd_tol=6.0  
+export varqc=.true.
+export huber=.true.
+export zhuberleft=1.1
+export zhuberright=1.1
 
 export biasvar=-500
-if [ $controlanal == 'false' ];  then
+export NOSAT=YES # no radiances assimilated (comment this out to get radiances)
+if [ $controlanal == 'false' ] && [ $NOSAT == "NO" ];  then
    export lupd_satbiasc=.true.
    export numiter=4
 else
    export lupd_satbiasc=.false.
-   export numiter=0
+   export numiter=1
+fi
+# iterate enkf in obspace for varqc
+if [ $varqc == ".true." ]; then
+  export numiter=5
 fi
 # use pre-generated bias files.
 #export lupd_satbiasc=.false.
@@ -399,21 +400,7 @@ elif [ "$machine" == 'wcoss' ]; then
    export FIXFV3=${fv3gfspath}/fix_fv3
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
    export fixgsi=${gsipath}/fix
-   export fixcrtm=${fixgsi}/crtm_v2.2.3
-   export execdir=${enkfscripts}/exec_${machine}
-   export enkfbin=${execdir}/global_enkf
-   export FCSTEXEC=${execdir}/${fv3exec}
-   export gsiexec=${execdir}/global_gsi
-   export nemsioget=${execdir}/nemsio_get
-elif [ "$machine" == 'cori' ]; then
-   #export fv3gfspath=/project/projectdirs/refcst/whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
-   export fv3gfspath=$SCRATCH/global_shared.v15.0.0
-   #export gsipath=/project/projectdirs/refcst/whitaker/fv3_reanl/ProdGSI
-   export gsipath=$SCRATCH/ProdGSI
-   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
-   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
-   export fixgsi=${gsipath}/fix
-   export fixcrtm=${fixgsi}/crtm_v2.2.3
+   export fixcrtm=${fixgsi}/crtm_2.2.3
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
@@ -433,7 +420,7 @@ fi
 
 export ANAVINFO=${enkfscripts}/global_anavinfo.l64.txt
 export ANAVINFO_ENKF=${ANAVINFO}
-export HYBENSINFO=${fixgsi}/global_hybens_info.l64.txt
+export HYBENSINFO=${enkfscripts}/global_hybens_info.l64.txt
 export CONVINFO=${fixgsi}/global_convinfo.txt
 export OZINFO=${fixgsi}/global_ozinfo.txt
 export SATINFO=${fixgsi}/global_satinfo.txt
@@ -446,10 +433,10 @@ export beta1_inv=0.125    # 0 means all ensemble, 1 means all 3DVar.
 export s_ens_h=485      # a gaussian e-folding, similar to sqrt(0.15) times Gaspari-Cohn length
 export s_ens_v=-0.485   # in lnp units.
 # NOTE: most other GSI namelist variables are in ${rungsi}
-#export use_prepb_satwnd=.true.
-#export aircraft_bc=.false.
-export use_prepb_satwnd=.false.
-export aircraft_bc=.true.
+export use_prepb_satwnd=.true.
+export aircraft_bc=.false.
+#export use_prepb_satwnd=.false.
+#export aircraft_bc=.true.
 
 cd $enkfscripts
 echo "run main driver script"
