@@ -42,6 +42,7 @@ export replay_run_observer='false' # run observer on replay forecast
 # HPSS save should be done)
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
 export run_long_fcst="false"  # spawn a longer control forecast at 00 and 12 UTC
+export copy_history_files=1 # save pressure level history files (and copute ens mean)
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
@@ -114,7 +115,7 @@ else
 fi
 export k_split=1
 export n_split=6
-export hydrostatic=F
+export hydrostatic=T
 if [ $hydrostatic == 'T' ];  then
    export fv3exec='fv3-hydro.exe'
    export consv_te=0
