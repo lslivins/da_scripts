@@ -63,7 +63,7 @@ export fg_proc=$corespernode
 export fg_threads=1 
 export write_groups=2
 export write_tasks=6 
-if [ $quilting == 'true' ]; then
+if [ $quilting == '.true.' ]; then
 export layout="2, 2" 
 else
 export layout="3, 2"

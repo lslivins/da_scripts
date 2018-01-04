@@ -42,8 +42,8 @@ while ($fh <= $FHMAX)
 end
 
 # now compute ensemble mean restart files.
+if ( $ensmean_restart == 'true' && $fg_only == 'false' ) then
 if ( $cleanup_ensmean == 'true' || ( $cleanup_ensmean == 'false' && ! -s ${datapath2}/ensmean/INPUT/fv_core.res.tile1.nc ) ) then
-if ( $fg_only == 'false') then
    echo "compute ensemble mean restart files `date`"
    setenv nprocs 1
    setenv mpitaskspernode 1
