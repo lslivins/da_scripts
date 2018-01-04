@@ -250,11 +250,18 @@ export use_qsatensmean=.true.
                                                                     
 export letkf_flag=.false.
 export nobsl_max=10000
+
+# no EnKF QC
+export sprd_tol=1.e30
+export varqc=.false.
+export huber=.false.
+export zhuberleft=1.1
+export zhuberright=1.1
+
+# turn on EnKF QC
 export sprd_tol=6.0  
 export varqc=.true.
 export huber=.true.
-export zhuberleft=1.1
-export zhuberright=1.1
 
 export biasvar=-500
 export NOSAT=YES # no radiances assimilated (comment this out to get radiances)
@@ -274,14 +281,6 @@ fi
 #export numiter=1
 #export biascorrdir=<exptdir>
 
-
-# turn on enkf analog of VarQC
-#export sprd_tol=10.
-#export varqc=.true.
-#export huber=.true.
-#export zhuberleft=1.1
-#export zhuberright=1.1
-                                                                    
 export nanals=80                                                    
                                                                     
 export paoverpb_thresh=0.99  # set to 1.0 to use all the obs in serial EnKF
