@@ -66,8 +66,12 @@ elif [ "$machine" == 'gaea' ]; then
    export basedir=/lustre/f1/unswept/${USER}/fv3_reanl
    export datadir=$basedir
    export hsidir="/2year/BMC/gsienkf/whitaker/gaea/${exptname}"
+elif [ "$machine" == 'cori' ]; then
+   export basedir=${SCRATCH}
+   export datadir=$basedir
+   export hsidir="fv3_reanl/${exptname}"
 else
-   echo "machine must be 'wcoss', 'theia', or 'gaea', got $machine"
+   echo "machine must be 'wcoss', 'theia', 'gaea' or 'cori', got $machine"
    exit 1
 fi
 export datapath="${datadir}/${exptname}"
@@ -326,6 +330,20 @@ elif [ "$machine" == 'wcoss' ]; then
    export FIXGLOBAL=${fv3gfspath}/fix/fix_am
    export fixgsi=${gsipath}/fix
    export fixcrtm=${fixgsi}/crtm_2.2.3
+   export execdir=${enkfscripts}/exec_${machine}
+   export enkfbin=${execdir}/global_enkf
+   export FCSTEXEC=${execdir}/${fv3exec}
+   export gsiexec=${execdir}/global_gsi
+   export nemsioget=${execdir}/nemsio_get
+elif [ "$machine" == 'cori' ]; then
+   #export fv3gfspath=/project/projectdirs/refcst/whitaker/fv3_reanl/fv3gfs/global_shared.v15.0.0
+   export fv3gfspath=$SCRATCH/global_shared.v15.0.0
+   #export gsipath=/project/projectdirs/refcst/whitaker/fv3_reanl/ProdGSI
+   export gsipath=$SCRATCH/ProdGSI
+   export FIXFV3=${fv3gfspath}/fix/fix_fv3_gmted2010
+   export FIXGLOBAL=${fv3gfspath}/fix/fix_am
+   export fixgsi=${gsipath}/fix
+   export fixcrtm=${fixgsi}/crtm_v2.2.3
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
