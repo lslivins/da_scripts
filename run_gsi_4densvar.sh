@@ -324,7 +324,7 @@ fi
 # Create global_gsi namelist
 cat <<EOF > gsiparm.anl
  &SETUP
-   miter=2,niter(1)=50,niter(2)=150,
+   miter=1,niter(1)=100,niter(2)=0,
    niter_no_qc(1)=25,niter_no_qc(2)=0,
    write_diag(1)=.true.,write_diag(2)=.false.,write_diag(3)=.true.,
    netcdf_diag=.true.,binary_diag=.false.,
@@ -819,7 +819,6 @@ sh ${enkfscripts}/runmpi
 rc=$?
 if [[ $rc -ne 0 ]];then
   echo "GSI failed with exit code $rc"
-  mail -s "$analdate GSI failed with exit code $rc" ${monitor_email} < /dev/null
   exit $rc
 fi
 else
