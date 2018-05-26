@@ -1,9 +1,8 @@
 echo "running on $machine using $NODES nodes"
 ## ulimit -s unlimited
 
-#export ndates_job=11
-export ndates_job=13
-export exptname=2003stream   
+export ndates_job=16
+export exptname=2003stream_convonly
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia.
@@ -24,7 +23,7 @@ export rungfs='run_fv3.sh' # ensemble forecast
 export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
 export controlanal='true' # use gsi hybrid (if false, pure enkf is used)
-export controlfcst='true' # if true, run dual-res setup with single high-res control
+export controlfcst='false' # if true, run dual-res setup with single high-res control
 export cleanup_fg='true'
 export cleanup_ensmean='true'
 export cleanup_anal='true'
@@ -35,8 +34,8 @@ export resubmit='true'
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
 # this is for diagnostic purposes (to get GSI diagnostic files) 
-export replay_controlfcst='true'
-export replay_run_observer='true' # run observer on replay forecast
+export replay_controlfcst='false'
+export replay_run_observer='false' # run observer on replay forecast
 export replay_only='false' # replay nanals_replay members, don't run DA
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
@@ -44,8 +43,8 @@ export replay_only='false' # replay nanals_replay members, don't run DA
 # HPSS save should be done)
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
 export save_hpss="true"
-export run_long_fcst="true"  # spawn a longer control forecast at 00 and 12 UTC
-export run_long_fcst_cfsr="true" # also run a long forecast from CFSR initial conditions
+export run_long_fcst="false"  # spawn a longer control forecast at 00 and 12 UTC
+export run_long_fcst_cfsr="false" # also run a long forecast from CFSR initial conditions
 export ensmean_restart='true'
 export copy_history_files=1 # save pressure level history files (and compute ens mean)
 
@@ -115,27 +114,27 @@ export prautco="0.00015,0.00015"
 #export imp_physics=99 # zhao-carr
 export imp_physics=11 # GFDL MP
 
-export NOSAT="NO" # if yes, no radiances assimilated
+export NOSAT="YES" # if yes, no radiances assimilated
 # model NSST parameters contained within nstf_name in FV3 namelist
 # (comment out to get default - no NSST)
 # nstf_name(1) : NST_MODEL (NSST Model) : 0 = OFF, 1 = ON but uncoupled, 2 = ON and coupled
-export DONST="YES"
-export NST_MODEL=2
-# nstf_name(2) : NST_SPINUP : 0 = OFF, 1 = ON,
-export NST_SPINUP=0 # (will be set to 1 if fg_only=='true')
-# nstf_name(3) : NST_RESV (Reserved, NSST Analysis) : 0 = OFF, 1 = ON
-export NST_RESV=0
-# nstf_name(4,5) : ZSEA1, ZSEA2 the two depths to apply vertical average (bias correction)
-export ZSEA1=0
-export ZSEA2=0
-export NSTINFO=0          # number of elements added in obs. data array (default = 0)
-export NST_GSI=3          # default 0: No NST info at all;
+#export DONST="YES"
+#export NST_MODEL=2
+## nstf_name(2) : NST_SPINUP : 0 = OFF, 1 = ON,
+#export NST_SPINUP=0 # (will be set to 1 if fg_only=='true')
+## nstf_name(3) : NST_RESV (Reserved, NSST Analysis) : 0 = OFF, 1 = ON
+#export NST_RESV=0
+## nstf_name(4,5) : ZSEA1, ZSEA2 the two depths to apply vertical average (bias correction)
+#export ZSEA1=0
+#export ZSEA2=0
+#export NSTINFO=0          # number of elements added in obs. data array (default = 0)
+#export NST_GSI=3          # default 0: No NST info at all;
                           #         1: Input NST info but not used in GSI;
                           #         2: Input NST info, used in CRTM simulation, no Tr analysis
                           #         3: Input NST info, used in both CRTM simulation and Tr analysis
 
-#export NST_GSI=0          # No NST 
-#export DONST=NO
+export NST_GSI=0          # No NST 
+export DONST=NO
 
 if [ $NST_GSI -gt 0 ]; then export NSTINFO=4; fi
 if [ $NOSAT == "YES" ]; then export NST_GSI=0; fi # don't try to do NST in GSI without satellite data
@@ -348,7 +347,7 @@ fi
 export nanals=80                                                    
 # replay first 10 members if replay_only "true"
 # recenter nanals_replay ensemble around nanals ens mean
-export nanals_replay=10 
+export nanals_replay=0 
                                                                     
 export paoverpb_thresh=0.99  # set to 1.0 to use all the obs in serial EnKF
 export saterrfact=1.0
