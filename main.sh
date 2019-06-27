@@ -384,7 +384,7 @@ for nhr_anal in $iaufhrs2; do
   nemsio2nc4.py -n sfg2_${analdate}_${charfhr}_ensmean
   nemsio2nc4.py -n sfg2_${analdate}_${charfhr}_ensmean.orig
   popd
-  sh ${enkfscripts}/regridinc.sh ${datapath2}/sfg2_${analdate}_${charfhr}_ensmean.nc4 ${datapath2}/sanl2_${analdate}_${charfhr}_ensmean.orig.nc4 ${datapath2}/sfg_${analdate}_${charfhr}_ensmean.nc4 ${datapath2}/sanl_${analdate}_${charfhr}_ensmean.orig.nc4 ${datapath2}/sanl_${analdate}_${charfhr}_ensmean ${datapath2}/sanl2_${analdate}_${charfhr}_ensmean $alpha $beta
+  sh ${enkfscripts}/regridinc.sh ${datapath2}/sfg2_${analdate}_${charfhr}_ensmean.nc4 ${datapath2}/sanl2_${analdate}_${charfhr}_ensmean.orig.nc4 ${datapath2}/sfg_${analdate}_${charfhr}_ensmean.nc4 ${datapath2}/sanl_${analdate}_${charfhr}_ensmean.orig.nc4 ${datapath2}/sanl2_${analdate}_${charfhr}_ensmean ${datapath2}/sanl_${analdate}_${charfhr}_ensmean $alpha $beta
 done
 echo "$analdate recenter enkf analysis ensemble (hires) `date`"
 export fileprefix="sanl"

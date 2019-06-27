@@ -1,5 +1,7 @@
 program nctonemsio
 
+! convert netcdf file (converted from nemsio using cdo) back to nemsio.
+
 !ifort -I${NEMSIO_INC} -I${NETCDF}/include -warn all nctonemsio.f90 ${NEMSIO_LIB} ${BACIO_LIB4} ${W3NCO_LIB4} -L${NETCDF}/lib -lnetcdf -lnetcdff -L${HDF5_DIR}/lib -lhdf5 -lhdf5_hl
 
   use netcdf
@@ -21,7 +23,7 @@ program nctonemsio
 ! read data from this netcdf file
   call getarg(1,filename_nc)
 
-! read data from this nemsio file
+! use this nemsio file as a template
   call getarg(2,filename_nemsio)
 
 ! replace data from nemsio from netcdf, write to this file
