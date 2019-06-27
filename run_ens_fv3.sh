@@ -24,14 +24,15 @@ nhost=$nhost1
 nanal=1
 
 while [ $nanal -le $nanals ]; do
- export charnanal="mem`printf %03i $nanal`"
+ export charnanal="mem`printf %04i $nanal`"
+ export memdir="${memdirprefix}`printf %04i $nanal`"
 
 # check to see if output files already created.
  fhr=$FHMIN
- outfiles=""
+ outfiles="${datapath}/${analdatep1}/${memdir}/INPUT/sfc_data.tile6.nc"
  while [ $fhr -le $FHMAX ]; do
     charhr="fhr`printf %02i $fhr`"
-    outfiles="${outfiles} ${datapath}/${analdatep1}/sfg_${analdatep1}_${charhr}_${charnanal} ${datapath}/${analdatep1}/bfg_${analdatep1}_${charhr}_${charnanal}"
+    outfiles="${outfiles} ${datapath}/${analdatep1}/${fileprefix}_${analdatep1}_${charhr}_${charnanal} ${datapath}/${analdatep1}/${bfileprefix}_${analdatep1}_${charhr}_${charnanal}"
     fhr=$((fhr+FHOUT))
  done 
  filemissing='no'
@@ -61,7 +62,8 @@ while [ $nanal -le $nanals ]; do
       echo "HOSTFILE = $HOSTFILE"
       cat $HOSTFILE
    fi
-   sh ${enkfscripts}/${rungfs} > ${current_logdir}/run_fg_${charnanal}.iter${niter}.out 2>&1 &
+   sh ${enkfscripts}/${rungfs} > ${current_logdir}/run_fg_${memdir}.iter${niter}.out 2>&1 &
+   sleep 1
    nhost=$((nhost+countproc))
  else
    echo "skipping nanal = ${nanal}, output files already created"
@@ -87,12 +89,13 @@ echo "checking output files .."`date`
 nanal=1
 anyfilemissing='no'
 while [ $nanal -le $nanals ]; do
-    export charnanal="mem`printf %03i $nanal`"
+    export charnanal="mem`printf %04i $nanal`"
+    export memdir="${memdirprefix}`printf %04i $nanal`"
     fhr=$FHMIN
-    outfiles="${datapath}/${analdatep1}/${charnanal}/INPUT/sfc_data.tile6.nc"
+    outfiles="${datapath}/${analdatep1}/${memdir}/INPUT/sfc_data.tile6.nc"
     while [ $fhr -le $FHMAX ]; do
        charhr="fhr`printf %02i $fhr`"
-       outfiles="${outfiles} ${datapath}/${analdatep1}/sfg_${analdatep1}_${charhr}_${charnanal} ${datapath}/${analdatep1}/bfg_${analdatep1}_${charhr}_${charnanal}"
+       outfiles="${outfiles} ${datapath}/${analdatep1}/${fileprefix}_${analdatep1}_${charhr}_${charnanal} ${datapath}/${analdatep1}/${bfileprefix}_${analdatep1}_${charhr}_${charnanal}"
        fhr=$((fhr+FHOUT))
     done
     filemissing='no'

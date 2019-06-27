@@ -22,7 +22,6 @@ elif [ "$machine" == 'gaea' ]; then
    module load nco/4.6.4
    module load wgrib
    export WGRIB=`which wgrib`
-##   export WGRIB=/ncrc/home1/Gary.Bates/bin/wgrib
 fi
 
 export VERBOSE=${VERBOSE:-"NO"}
@@ -102,9 +101,9 @@ fi
 
 
 # copy data, diag and field tables.
-cd ${datapath2}/${charnanal}
+cd ${datapath2}/${memdir}
 if [ $? -ne 0 ]; then
-  echo "cd to ${datapath2}/${charnanal} failed, stopping..."
+  echo "cd to ${datapath2}/${memdir} failed, stopping..."
   exit 1
 fi
 /bin/rm -f *nemsio* PET*
@@ -167,14 +166,18 @@ if [ "$fg_only" == "false" ] && [ -z $skip_calc_increment ]; then
 # IAU - multiple increments.
    for fh in $iaufhrs2; do
       export increment_file="fv3_increment${fh}.nc"
-      if [ "$replay_controlfcst" == 'true' ] && [ "$charnanal" == 'control2' ]; then
-         export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_ensmean"
+      if [ "$replay_controlfcst" == 'true' ] && [ "$memdir" == 'control2' ]; then
+         export analfile="${datapath2}/${fileprefixa}_${analdate}_fhr0${fh}_ensmean"
       else
-         export analfile="${datapath2}/sanl_${analdate}_fhr0${fh}_${charnanal}"
+         export analfile="${datapath2}/${fileprefixa}_${analdate}_fhr0${fh}_${charnanal}"
       fi
       echo "create ${increment_file}"
       /bin/rm -f ${increment_file}
-      export "PGM=${execdir}/calc_increment_nemsio.x ${datapath2}/sfg_${analdate}_fhr0${fh}_${charnanal} ${analfile} ${increment_file} T F"
+      if [ ${fileprefix} == 'sfg2' ]; then
+        export "PGM=${execdir}/calc_increment_nemsio.x ${datapath2}/${fileprefix}_${analdate}_fhr0${fh}_${charnanal}.orig ${analfile} ${increment_file} T F"
+      else
+        export "PGM=${execdir}/calc_increment_nemsio.x ${datapath2}/${fileprefix}_${analdate}_fhr0${fh}_${charnanal} ${analfile} ${increment_file} T F"
+      fi
       nprocs=1 mpitaskspernode=1 ${enkfscripts}/runmpi
       if [ $? -ne 0 -o ! -s ${increment_file} ]; then
          echo "problem creating ${increment_file}, stopping .."
@@ -376,9 +379,9 @@ nhours_fcst:             ${FHMAX_FCST}
 RUN_CONTINUE:            F
 ENS_SPS:                 F
 dt_atmos:                ${dt_atmos} 
-output_1st_tstep_rst:    .false.
 calendar:                'julian'
 cpl:                     F
+output_1st_tstep_rst:    .false.
 memuse_verbose:          F
 atmos_nthreads:          ${OMP_NUM_THREADS}
 use_hyper_thread:        F
@@ -707,7 +710,7 @@ ls -l INPUT
 # run model
 export PGM=$FCSTEXEC
 echo "start running model `date`"
-${enkfscripts}/runmpi
+sh ${enkfscripts}/runmpi
 if [ $? -ne 0 ]; then
    echo "model failed..."
    exit 1
@@ -724,12 +727,12 @@ if [ "$quilting" == ".true." ]; then
      fh2=`expr $fh + $FHOFFSET`
      charfhr="fhr"`printf %02i $fh`
      charfhr3="f"`printf %03i $fh2`
-     /bin/mv -f dyn${charfhr3}.nemsio ${DATOUT}/sfg_${analdatep1}_${charfhr}_${charnanal}
+     /bin/mv -f dyn${charfhr3}.nemsio ${DATOUT}/${fileprefix}_${analdatep1}_${charfhr}_${charnanal}
      if [ $? -ne 0 ]; then
         echo "nemsio file missing..."
         exit 1
      fi
-     /bin/mv -f phy${charfhr3}.nemsio ${DATOUT}/bfg_${analdatep1}_${charfhr}_${charnanal}
+     /bin/mv -f phy${charfhr3}.nemsio ${DATOUT}/${bfileprefix}_${analdatep1}_${charfhr}_${charnanal}
      if [ $? -ne 0 ]; then
         echo "nemsio file missing..."
         exit 1
@@ -742,14 +745,14 @@ ls -l *nc
 if [ -z $dont_copy_restart ]; then # if dont_copy_restart not set, do this
    ls -l RESTART
    # copy restart file to INPUT directory for next analysis time.
-   /bin/rm -rf ${datapathp1}/${charnanal}/RESTART ${datapathp1}/${charnanal}/INPUT
-   mkdir -p ${datapathp1}/${charnanal}/INPUT
+   /bin/rm -rf ${datapathp1}/${memdir}/RESTART ${datapathp1}/${memdir}/INPUT
+   mkdir -p ${datapathp1}/${memdir}/INPUT
    cd RESTART
    ls -l
    datestring="${yrnext}${monnext}${daynext}.${hrnext}0000."
    for file in ${datestring}*nc; do
       file2=`echo $file | cut -f3-10 -d"."`
-      /bin/mv -f $file ${datapathp1}/${charnanal}/INPUT/$file2
+      /bin/mv -f $file ${datapathp1}/${memdir}/INPUT/$file2
       if [ $? -ne 0 ]; then
         echo "restart file missing..."
         exit 1
@@ -760,8 +763,8 @@ fi
 
 # also move history files if copy_history_files is set.
 if [ ! -z $copy_history_files ]; then
-  mkdir -p ${DATOUT}/${charnanal}
-  /bin/mv -f fv3_historyp*.nc ${DATOUT}/${charnanal}
+  mkdir -p ${DATOUT}/${memdir}
+  /bin/mv -f fv3_historyp*.nc ${DATOUT}/${memdir}
   # copy with compression
   #n=1
   #while [ $n -le 6 ]; do
@@ -778,13 +781,13 @@ fi
 ls -l stoch_out*
 charfh="F"`printf %06i $FHSTOCH`
 if [ -s stoch_out.${charfh} ]; then
-  mkdir -p ${DATOUT}/${charnanal}
-  echo "copying stoch_out.${charfh} ${DATOUT}/${charnanal}/stoch_ini"
-  /bin/mv -f "stoch_out.${charfh}" ${DATOUT}/${charnanal}/stoch_ini
+  mkdir -p ${DATOUT}/${memdir}
+  echo "copying stoch_out.${charfh} ${DATOUT}/${memdir}/stoch_ini"
+  /bin/mv -f "stoch_out.${charfh}" ${DATOUT}/${memdir}/stoch_ini
 fi
 
-ls -l ${DATOUT}
-ls -l ${datapathp1}/${charnanal}/INPUT
+#ls -l ${DATOUT}
+#ls -l ${datapathp1}/${memdir}/INPUT
 
 # remove symlinks from INPUT directory
 cd INPUT

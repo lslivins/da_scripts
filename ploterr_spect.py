@@ -31,7 +31,7 @@ expt2 = sys.argv[2]
 date1 = sys.argv[3]
 date2 = sys.argv[4]
 
-fhour = 120
+fhour = 6
 var = 't'
 level = 500
 vargrb = var
@@ -40,9 +40,9 @@ if var == 'z':
     vargrb = 'gh'
     varnc = 'h_plev'
 
-datapath1 = '/scratch3/BMC/gsienkf/whitaker/%s' % expt1
-datapath2 = '/scratch3/BMC/gsienkf/whitaker/%s' % expt2
-analpath = '/scratch3/BMC/gsienkf/whitaker/ecanl'
+datapath1 = '/lustre/f2/scratch/Jeffrey.S.Whitaker/%s' % expt1
+datapath2 = '/lustre/f2/scratch/Jeffrey.S.Whitaker/%s' % expt2
+analpath = '/lustre/f2/dev/Jeffrey.S.Whitaker/ecanl'
 
 if fhour > 9:
     dates = dateutils.daterange(date1,date2,24)
@@ -107,8 +107,8 @@ for date in dates:
         fcsterrspect2 += varspec/len(dates)
     print date,np.sqrt(rms1),np.sqrt(rms2)
 
-mean1 = np.sqrt(fcsterrspect1.sum())
-mean2 = np.sqrt(fcsterrspect2.sum())
+mean1 = np.sqrt(fcsterrspect1[1:].sum())
+mean2 = np.sqrt(fcsterrspect2[1:].sum())
 print 'global RMS spectra',expt1,expt2,mean1,mean2
 plt.semilogy(np.arange(ntrunc+1),fcsterrspect1,color='b',linewidth=2,\
         label='%s Global RMS %4.2f' % (expt1,mean1))

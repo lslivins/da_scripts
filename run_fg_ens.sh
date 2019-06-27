@@ -5,9 +5,9 @@ if [ $cleanup_fg == 'true' ];  then
 echo "deleting existing files..."
 nanal=1
 while [ $nanal -le $nanals ]; do
-    charnanal="mem`printf %03i $nanal`"
-    /bin/rm -f ${datapath}/${analdatep1}/sfg_${analdatep1}*${charnanal}
-    /bin/rm -f ${datapath}/${analdatep1}/bfg_${analdatep1}*${charnanal} 
+    charnanal="mem`printf %04i $nanal`"
+    /bin/rm -f ${datapath}/${analdatep1}/${fileprefix}_${analdatep1}*${charnanal}
+    /bin/rm -f ${datapath}/${analdatep1}/${bfileprefix}_${analdatep1}*${charnanal} 
     nanal=$((nanal+1))
 done
 fi
@@ -18,10 +18,10 @@ alldone='no'
 echo "${analdate} compute first guesses `date`"
 while [ $alldone == 'no' ] && [ $niter -le $nitermax ]; do
     if [ $niter -eq 1 ]; then
-    ${enkfscripts}/${fg_gfs} > ${current_logdir}/run_fg.iter${niter}.out 2>&1
+    ${enkfscripts}/${fg_gfs} > ${current_logdir}/run_fg_${memdirprefix}.iter${niter}.out 2>&1
     exitstat=$?
     else
-    ${enkfscripts}/${fg_gfs} > ${current_logdir}/run_fg.iter${niter}.out 2>&1
+    ${enkfscripts}/${fg_gfs} > ${current_logdir}/run_fg_${memdirprefix}.iter${niter}.out 2>&1
     exitstat=$?
     fi
     if [ $exitstat -eq 0 ]; then

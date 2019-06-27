@@ -18,6 +18,14 @@ else # externally specified bias correction files.
 fi
 export GSATANG=$fixgsi/global_satangbias.txt # not used, but needs to exist
 
+# make symlinks for diag files
+pushd ${datapath2}
+for file in diag*${charnanal}.*nc4; do  
+   fileprefix=`echo $file | cut -f1-4 -d"_"`
+   ln -fs ${datapath2}/$file ${datapath2}/${fileprefix}_ensmean.nc4
+done
+popd
+
 ln -fs $GBIAS   ${datapath2}/satbias_in
 ln -fs $GBIAS_PC   ${datapath2}/satbias_pc
 ln -fs $GSATANG ${datapath2}/satbias_angle
@@ -36,7 +44,7 @@ ln -fs ${current_logdir}/convinfo.out ${datapath2}/fort.205
 
 # remove previous analyses
 if [ $cleanup_anal == 'true' ]; then
-   /bin/rm -f ${datapath2}/sanl_*mem*
+   /bin/rm -f ${datapath2}/${afileprefix}_*mem*
 fi
 
 niter=1

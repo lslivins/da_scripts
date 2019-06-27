@@ -62,8 +62,8 @@ im=`echo $adate | cut -c5-6`
 id=`echo $adate | cut -c7-8`
 ih=`echo $adate | cut -c9-10`
 echo "iy,im,id,ih = $iy $im $id $ih"
-fdatei=`$nemsioget ${datges}/bfg_${adate}_fhr03_${charnanal} idate | tail -1 | cut -f2 -d"="`
-fhr=`$nemsioget ${datges}/bfg_${adate}_fhr03_${charnanal} nfhour | cut -f2 -d"="`
+fdatei=`$nemsioget ${datges}/${bfileprefix}_${adate}_fhr03_${charnanal} idate | tail -1 | cut -f2 -d"="`
+fhr=`$nemsioget ${datges}/${bfileprefix}_${adate}_fhr03_${charnanal} nfhour | cut -f2 -d"="`
 fdatev=`${incdate} $fdatei $fhr`
 echo "fdatei=$fdatei fhr=$fhr fdatev=$fdatev"
 gdate0=`echo $gdate | cut -c1-8`
@@ -375,7 +375,7 @@ cat <<EOF > gsiparm.anl
  /
  /
  &OBS_INPUT
-   dmesh(1)=145.0,dmesh(2)=150.0,dmesh(3)=100.0,time_window_max=3.0,
+   dmesh(1)=${dmesh},dmesh(2)=${dmesh},dmesh(3)=${dmesh},time_window_max=3.0,
    $OBSINPUT
  /
 OBS_INPUT::
@@ -748,36 +748,36 @@ $nln $GBIAS_PC           ./satbias_pc
 $nln $GSATANG            ./satbias_angle
 $nln $GBIASAIR           ./aircftbias_in
 
-SFCG03=${SFCG03:-$datges/bfg_${adate}_fhr03_${charnanal}}
+SFCG03=${SFCG03:-$datges/${bfileprefix}_${adate}_fhr03_${charnanal}}
 $nln $SFCG03               ./sfcf03
-SFCG06=${SFCG06:-$datges/bfg_${adate}_fhr06_${charnanal}}
+SFCG06=${SFCG06:-$datges/${bfileprefix}_${adate}_fhr06_${charnanal}}
 $nln $SFCG06               ./sfcf06
-SFCG09=${SFCG09:-$datges/bfg_${adate}_fhr09_${charnanal}}
+SFCG09=${SFCG09:-$datges/${bfileprefix}_${adate}_fhr09_${charnanal}}
 $nln $SFCG09               ./sfcf09
 
-SIGG03=${SIGG03:-$datges/sfg_${adate}_fhr03_${charnanal}}
+SIGG03=${SIGG03:-$datges/${fileprefix}_${adate}_fhr03_${charnanal}}
 $nln $SIGG03               ./sigf03
-SIGG06=${SIGG06:-$datges/sfg_${adate}_fhr06_${charnanal}}
+SIGG06=${SIGG06:-$datges/${fileprefix}_${adate}_fhr06_${charnanal}}
 $nln $SIGG06               ./sigf06
-SIGG09=${SIGG09:-$datges/sfg_${adate}_fhr09_${charnanal}}
+SIGG09=${SIGG09:-$datges/${fileprefix}_${adate}_fhr09_${charnanal}}
 $nln $SIGG09               ./sigf09
 
 if [[ "$HRLY_BKG" = "YES" ]]; then
-SFCG04=${SFCG04:-$datges/bfg_${adate}_fhr04_${charnanal}}
+SFCG04=${SFCG04:-$datges/${bfileprefix}_${adate}_fhr04_${charnanal}}
 $nln $SFCG04               ./sfcf04
-SFCG05=${SFCG05:-$datges/bfg_${adate}_fhr05_${charnanal}}
+SFCG05=${SFCG05:-$datges/${bfileprefix}_${adate}_fhr05_${charnanal}}
 $nln $SFCG05               ./sfcf05
-SFCG07=${SFCG07:-$datges/bfg_${adate}_fhr07_${charnanal}}
+SFCG07=${SFCG07:-$datges/${bfileprefix}_${adate}_fhr07_${charnanal}}
 $nln $SFCG07               ./sfcf07
-SFCG08=${SFCG08:-$datges/bfg_${adate}_fhr08_${charnanal}}
+SFCG08=${SFCG08:-$datges/${bfileprefix}_${adate}_fhr08_${charnanal}}
 $nln $SFCG08               ./sfcf08
-SIGG04=${SIGG04:-$datges/sfg_${adate}_fhr04_${charnanal}}
+SIGG04=${SIGG04:-$datges/${fileprefix}_${adate}_fhr04_${charnanal}}
 $nln $SIGG04               ./sigf04
-SIGG05=${SIGG05:-$datges/sfg_${adate}_fhr05_${charnanal}}
+SIGG05=${SIGG05:-$datges/${fileprefix}_${adate}_fhr05_${charnanal}}
 $nln $SIGG05               ./sigf05
-SIGG07=${SIGG07:-$datges/sfg_${adate}_fhr07_${charnanal}}
+SIGG07=${SIGG07:-$datges/${fileprefix}_${adate}_fhr07_${charnanal}}
 $nln $SIGG07               ./sigf07
-SIGG08=${SIGG08:-$datges/sfg_${adate}_fhr08_${charnanal}}
+SIGG08=${SIGG08:-$datges/${fileprefix}_${adate}_fhr08_${charnanal}}
 $nln $SIGG08               ./sigf08
 fi
 
@@ -786,7 +786,7 @@ ln -s $datges/ensmem*.pe* .
 ln -s $datges/control*.pe* .
 fh=3
 while [ $fh -le 9 ] ;do
-for ensfile in $datges/sfg_${adate}*fhr0${fh}*mem???; do
+for ensfile in $datges/${fileprefix}_${adate}*fhr0${fh}*mem???; do
  ensfilename=`basename $ensfile`
  memnum=`echo $ensfilename | cut -f4 -d"_" | cut -c4-6`
  $nln $ensfile ./sigf0${fh}_ens_mem${memnum}
@@ -990,6 +990,7 @@ for loop in $loops; do
             fi
             ${enkfscripts}/runmpi 1> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.out 2> ${current_logdir}/nc_diag_cat_${type}_${string}_${charnanal2}.err &
             #${enkfscripts}/runmpi 1> nc_diag_cat_${type}_${string}.out &
+            sleep 1
             if [ $nodecount -eq $totnodes ]; then
                echo "waiting... nodecount=$nodecount"
                wait

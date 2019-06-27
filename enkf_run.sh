@@ -36,8 +36,8 @@ for nfhr in $iaufhrs2; do
   nanal=1
   filemissing='no'
   while [ $nanal -le $nanals ]; do
-     charnanal="mem"`printf %03i $nanal`
-     analfile="${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}"
+     charnanal="mem"`printf %04i $nanal`
+     analfile="${datapath2}/${afileprefix}_${analdate}_${charfhr}_${charnanal}"
      if [ ! -s $analfile ]; then
         filemissing='yes'
      fi
@@ -62,8 +62,15 @@ echo "computing enkf update..."
 date
 cd ${datapath2}
 
+fgfileprefixes="'${bfileprefix}_${analdate}_fhr03_','${bfileprefix}_${analdate}_fhr06_','${bfileprefix}_${analdate}_fhr09_'"
+statefileprefixes="'${bfileprefix}_${analdate}_fhr03_','${bfileprefix}_${analdate}_fhr06_','${bfileprefix}_${analdate}_fhr09_'"
+anlfileprefixes="'${afileprefix}_${analdate}_fhr03_','${afileprefix}_${analdate}_fhr06_','${afileprefix}_${analdate}_fhr09_'"
+
 cat <<EOF > enkf.nml
  &nam_enkf
+  fgfileprefixes=${fgfileprefixes},
+  statefileprefixes=${statefileprefixes},
+  anlfileprefixes=${anlfileprefixes},
   datestring="$analdate",datapath="$datapath2",
   analpertwtnh=$analpertwtnh,analpertwtsh=$analpertwtsh,analpertwttr=$analpertwttr,
   analpertwtnh_rtpp=$analpertwtnh_rtpp,analpertwtsh_rtpp=$analpertwtsh_rtpp,analpertwttr_rtpp=$analpertwttr_rtpp,
@@ -184,7 +191,7 @@ cat enkf.nml
 cp ${enkfscripts}/vlocal_eig.dat ${datapath2}
 
 /bin/rm -f ${datapath2}/enkf.log
-/bin/mv -f ${current_logdir}/ensda.out ${current_logdir}/ensda.out.save
+/bin/mv -f ${current_logdir}/ensda_${afileprefix}.out ${current_logdir}/ensda_${afileprefix}.out.save
 export PGM=$enkfbin
 echo "OMP_NUM_THREADS = $OMP_NUM_THREADS"
 
@@ -203,7 +210,7 @@ if [ ! -z $SLURM_JOB_ID ]; then
       # -c: cpus per task (number of threads per mpi task)
       # -n: number of mpi tasks
       # -N: number of nodes to run on
-      srun-multi -N 1 -n 1 -c ${OMP_NUM_THREADS} --cpu-bind cores $PGM : -N $totnodes -n $nprocs -c ${count} --cpu-bind cores $PGM > ${current_logdir}/ensda.out 2>&1
+      srun-multi -N 1 -n 1 -c ${OMP_NUM_THREADS} --cpu-bind cores $PGM : -N $totnodes -n $nprocs -c ${count} --cpu-bind cores $PGM > ${current_logdir}/ensda_${afileprefix}.out 2>&1
    else
       python ${enkfscripts}/get_slurm_hostfile.py $mpitaskspernode $HOSTFILE
       export SLURM_HOSTFILE=$HOSTFILE
@@ -211,16 +218,16 @@ if [ ! -z $SLURM_JOB_ID ]; then
       echo "nprocs = $nprocs"
       cat $SLURM_HOSTFILE
       echo "srun -c ${OMP_NUM_THREADS} -n $nprocs --distribution=arbitrary --cpu-bind=cores $PGM"
-      srun -c ${OMP_NUM_THREADS} -n $nprocs --distribution=arbitrary --cpu-bind=cores $PGM > ${current_logdir}/ensda.out 2>&1
+      srun -c ${OMP_NUM_THREADS} -n $nprocs --distribution=arbitrary --cpu-bind=cores $PGM > ${current_logdir}/ensda_${afileprefix}.out 2>&1
    fi
 elif [ $machine == 'gaea' ] || [ $machine == 'wcoss' ]; then
    # run with single task on root node using aprun
    cores2=$((cores-corespernode ))
    export nprocs=`expr $cores2 \/ $enkf_threads`
-   aprun -n 1 -N 1 -d ${OMP_NUM_THREADS} --cc depth $PGM : -n $nprocs -N $mpitaskspernode -d ${OMP_NUM_THREADS} --cc depth $PGM > ${current_logdir}/ensda.out 2>&1
+   aprun -n 1 -N 1 -d ${OMP_NUM_THREADS} --cc depth $PGM : -n $nprocs -N $mpitaskspernode -d ${OMP_NUM_THREADS} --cc depth $PGM > ${current_logdir}/ensda_${afileprefix}.out 2>&1
 else
    # use mpirun/HOSTFILE to specify a single task on root node.
-   ${enkfscripts}/runmpi > ${current_logdir}/ensda.out 2>&1
+   ${enkfscripts}/runmpi > ${current_logdir}/ensda_${afileprefix}.out 2>&1
 fi
 if [ ! -s ${datapath2}/enkf.log ]; then
    echo "no enkf log file found"
@@ -238,8 +245,8 @@ fi # filemissing='yes'
 nanal=1
 filemissing='no'
 while [ $nanal -le $nanals ]; do
-   charnanal="mem"`printf %03i $nanal`
-   analfile=${datapath2}/sanl_${analdate}_${charfhr}_${charnanal}
+   charnanal="mem"`printf %04i $nanal`
+   analfile=${datapath2}/${afileprefix}_${analdate}_${charfhr}_${charnanal}
    if [ ! -s $analfile ]; then
      filemissing='yes'
    fi

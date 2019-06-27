@@ -1,5 +1,14 @@
 #!/bin/sh
 
+# setup node parameters used in blendinc.csh, recenter_ens_anal.csh and compute_ensmean_fcst.csh
+export mpitaskspernode=`python -c "import math; print int(math.ceil(float(${nanals})/float(${NODES})))"`
+if [ $mpitaskspernode -lt 1 ]; then
+ export mpitaskspernode=1
+fi
+export OMP_NUM_THREADS=`expr $corespernode \/ $mpitaskspernode`
+echo "mpitaskspernode = $mpitaskspernode threads = $OMP_NUM_THREADS"
+export nprocs=$nanals
+
 source $MODULESHOME/init/sh
 if [ $machine == 'wcoss' ]; then
    module load nco-gnu-sandybridge
@@ -23,20 +32,20 @@ while [ $fh -le $FHMAX ]; do
 
   charfhr="fhr`printf %02i $fh`"
 
-  if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s ${datapath}/${analdate}/bfg_${analdate}_${charfhr}_ensmean ]); then
-      echo "running  ${execdir}/getsfcensmeanp.x ${datapath2}/ bfg_${analdate}_${charfhr}_ensmean bfg_${analdate}_${charfhr} ${nanals}"
-      /bin/rm -f ${datapath2}/bfg_${analdate}_${charfhr}_ensmean
-      export PGM="${execdir}/getsfcensmeanp.x ${datapath2}/ bfg_${analdate}_${charfhr}_ensmean bfg_${analdate}_${charfhr} ${nanals}"
+  if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s ${datapath}/${analdate}/${bfileprefix}_${analdate}_${charfhr}_ensmean ]); then
+      echo "running  ${execdir}/getsfcensmeanp.x ${datapath2}/ ${bfileprefix}_${analdate}_${charfhr}_ensmean ${bfileprefix}_${analdate}_${charfhr} ${nanals}"
+      /bin/rm -f ${datapath2}/${bfileprefix}_${analdate}_${charfhr}_ensmean
+      export PGM="${execdir}/getsfcensmeanp.x ${datapath2}/ ${bfileprefix}_${analdate}_${charfhr}_ensmean ${bfileprefix}_${analdate}_${charfhr} ${nanals}"
       ${enkfscripts}/runmpi
   fi
-  if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s ${datapath}/${analdate}/sfg_${analdate}_${charfhr}_ensmean ]); then
-      /bin/rm -f ${datapath2}/sfg_${analdate}_${charfhr}_ensmean
-      echo "running ${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sfg_${analdate}_${charfhr}_ensmean sfg_${analdate}_${charfhr} ${nanals} ${JCAP}"
-      export PGM="${execdir}/getsigensmeanp_smooth.x ${datapath2}/ sfg_${analdate}_${charfhr}_ensmean sfg_${analdate}_${charfhr} ${nanals} ${JCAP}"
+  if [ $cleanup_ensmean == 'true' ] || ([ $cleanup_ensmean == 'false' ]  && [ ! -s ${datapath}/${analdate}/${fileprefix}_${analdate}_${charfhr}_ensmean ]); then
+      /bin/rm -f ${datapath2}/${fileprefix}_${analdate}_${charfhr}_ensmean
+      echo "running ${execdir}/getsigensmeanp_smooth.x ${datapath2}/ ${fileprefix}_${analdate}_${charfhr}_ensmean ${fileprefix}_${analdate}_${charfhr} ${nanals} ${JCAP}"
+      export PGM="${execdir}/getsigensmeanp_smooth.x ${datapath2}/ ${fileprefix}_${analdate}_${charfhr}_ensmean ${fileprefix}_${analdate}_${charfhr} ${nanals} ${JCAP}"
       ${enkfscripts}/runmpi
       if [ $fh -eq $ANALINC ]; then
-      echo "running ${execdir}/getsigensstatp.x ${datapath2}/ sfg_${analdate}_${charfhr} ${nanals}"
-      export PGM="${execdir}/getsigensstatp.x ${datapath2}/ sfg_${analdate}_${charfhr} ${nanals}"
+      echo "running ${execdir}/getsigensstatp.x ${datapath2}/ ${fileprefix}_${analdate}_${charfhr} ${nanals}"
+      export PGM="${execdir}/getsigensstatp.x ${datapath2}/ ${fileprefix}_${analdate}_${charfhr} ${nanals}"
       ${enkfscripts}/runmpi
       fi
   fi

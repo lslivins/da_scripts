@@ -56,23 +56,6 @@ export OMP_NUM_THREADS=`expr $corespernode \/ $mpitaskspernode`
 echo "mpitaskspernode = $mpitaskspernode threads = $OMP_NUM_THREADS"
 export nprocs=$nanals
 
-
-if [ -z $SLURM_JOB_ID ] && [ $machine == 'theia' ]; then
-    # HOSTFILE is machinefile to use for programs that require $nanals tasks.
-    # if enough cores available, just one core on each node.
-    # NODEFILE is machinefile containing one entry per node.
-    export HOSTFILE=$datapath2/machinesx
-    export NODEFILE=$datapath2/nodefile
-    cat $PBS_NODEFILE | uniq > $NODEFILE
-    if [ $NODES -ge$nanals ]; then
-      ln -fs $NODEFILE $HOSTFILE
-    else
-      # otherwise, leave as many cores empty as possible
-      awk "NR%${OMP_NUM_THREADS} == 1" ${PBS_NODEFILE} > $HOSTFILE
-    fi
-    /bin/cp -f $PBS_NODEFILE $datapath2/pbs_nodefile
-fi
-
 # current analysis time.
 export analdate=$analdate
 # previous analysis time.
@@ -117,11 +100,62 @@ export PREINP="${RUN}.t${hr}z."
 export PREINP1="${RUN}.t${hrp1}z."
 export PREINPm1="${RUN}.t${hrm1}z."
 
+nanals1=$nanals
+RES1=$RES
+JCAP1=$JCAP
+LONB1=$LONB
+LATB1=$LATB
+LONA1=$LONA
+LATA1=$LATA
+corrlengthnh1=$corrlengthsh
+corrlengthtr1=$corrlengthtr
+corrlengthsh1=$corrlengthsh
+analpertwtnh1=$analpertwtsh
+analpertwttr1=$analpertwttr
+analpertwtsh1=$analpertwtsh
+analpertwtnh_rtpp1=$analpertwtsh_rtpp
+analpertwttr_rtpp1=$analpertwttr_rtpp
+analpertwtsh_rtpp1=$analpertwtsh_rtpp
+nobsl_max1=$nobsl_max
+dt_atmos1=$dt_atmos
+cdmbgwd1=$cdmbgwd
+
 if [ $fg_only ==  'false' ]; then
 
+export fileprefix="sfg"
+export bfileprefix="bfg"
+export nanals=$nanals1
 echo "$analdate starting ens mean computation `date`"
 sh ${enkfscripts}/compute_ensmean_fcst.sh >  ${current_logdir}/compute_ensmean_fcst.out 2>&1
 echo "$analdate done computing ensemble mean `date`"
+
+export fileprefix="sfg2"
+export bfileprefix="bfg2"
+export nanals=$nanals2
+echo "$analdate starting ens mean computation 2 `date`"
+sh ${enkfscripts}/compute_ensmean_fcst.sh >  ${current_logdir}/compute_ensmean_fcst2.out 2>&1
+echo "$analdate done computing ensemble mean `date`"
+export nanals=$nanals1
+
+# change resolution of high res ensemble mean
+# recenter low resolution ensemble around up-scaled high res mean
+export fileprefixin="sfg"
+export fileprefixout="sfg2"
+export LONB=$LONB2
+export LATB=$LATB2
+export nanals=$nanals2
+echo "$analdate recenter low-res forecast ens ensemble around higher res ens mean `date`"
+sh ${enkfscripts}/recenter_chgres_ens_fcst.sh > ${current_logdir}/recenter_chgres_ens_fcst.out 2>&1
+recenter_done=`cat ${current_logdir}/recenter_ens.log`
+if [ $recenter_done == 'yes' ]; then
+  echo "$analdate recentering low-res forecast ens completed successfully `date`"
+else
+  echo "$analdate recentering low-res forecast ens did not complete successfully, exiting `date`"
+  exit 1
+fi
+export LONB=$LONB1
+export LATB=$LATB1
+export nanals=$nanals1
 
 # change orography in high-res control forecast nemsio file so it matches enkf ensemble,
 # adjust surface pressure accordingly.
@@ -177,65 +211,61 @@ fi
 # uses control forecast background, except if replay_controlfcst=true
 # ens mean background is used ("control" symlinked to "ensmean", control
 # forecast uses "control2")
-if [ $controlanal == 'true' ]; then
-   if [ $replay_controlfcst == 'true' ] || [ $controlfcst == 'false' ]; then
-      # use ensmean mean background if no control forecast is run, or 
-      # control forecast is replayed to ens mean increment
-      export charnanal='control'
-      export charnanal2='ensmean'
-      export lobsdiag_forenkf='.true.'
-      export skipcat="false"
-   else
-      # use control forecast background if control forecast is run, and it is
-      # not begin replayed to ensemble mean increment.
-      export charnanal='control'
-      export charnanal2='control'
-      export lobsdiag_forenkf='.false.'
-      export skipcat="false"
-   fi
-   if [ $hybgain == 'true' ]; then
-      type='3DVar'
-   else
-      type='hybrid 4DEnVar'
-   fi
-   # run Var analysis
-   echo "$analdate run $type `date`"
-   sh ${enkfscripts}/run_hybridanal.sh > ${current_logdir}/run_gsi_hybrid.out 2>&1
-   # once hybrid has completed, check log files.
-   hybrid_done=`cat ${current_logdir}/run_gsi_hybrid.log`
-   if [ $hybrid_done == 'yes' ]; then
-     echo "$analdate $type analysis completed successfully `date`"
-   else
-     echo "$analdate $type analysis did not complete successfully, exiting `date`"
-     exit 1
-   fi
+# run gsi observer with ens mean fcst background, saving jacobian.
+# generated diag files used by EnKF. No control analysis.
+export fileprefix="sfg"
+export bfileprefix="bfg"
+export charnanal='ensmean' 
+export charnanal2='ensmean1'
+export lobsdiag_forenkf='.true.'
+export skipcat="false"
+export JCAP=$JCAP1
+export LONA=$LONA1
+export LATA=$LATA1
+export dmesh=145
+echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
+sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsi_observer1.out 2>&1
+# once observer has completed, check log files.
+hybrid_done=`cat ${current_logdir}/run_gsi_observer.log`
+if [ $hybrid_done == 'yes' ]; then
+  echo "$analdate gsi observer completed successfully `date`"
 else
-   # run gsi observer with ens mean fcst background, saving jacobian.
-   # generated diag files used by EnKF. No control analysis.
-   export charnanal='control' 
-   export charnanal2='ensmean'
-   export lobsdiag_forenkf='.true.'
-   export skipcat="false"
-   echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
-   sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsi_observer.out 2>&1
-   # once observer has completed, check log files.
-   hybrid_done=`cat ${current_logdir}/run_gsi_observer.log`
-   if [ $hybrid_done == 'yes' ]; then
-     echo "$analdate gsi observer completed successfully `date`"
-   else
-     echo "$analdate gsi observer did not complete successfully, exiting `date`"
-     exit 1
-   fi
+  echo "$analdate gsi observer did not complete successfully, exiting `date`"
+  exit 1
 fi
+
+# change thinning
+export fileprefix="sfg2"
+export bfileprefix="bfg2"
+export charnanal='ensmean' 
+export charnanal2='ensmean2'
+export lobsdiag_forenkf='.true.'
+export skipcat="false"
+export dmesh=500
+export JCAP=$JCAP2
+export LONA=$LONA2
+export LATA=$LATA2
+echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
+sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsi_observer2.out 2>&1
+# once observer has completed, check log files.
+hybrid_done=`cat ${current_logdir}/run_gsi_observer.log`
+if [ $hybrid_done == 'yes' ]; then
+  echo "$analdate gsi observer completed successfully `date`"
+else
+  echo "$analdate gsi observer did not complete successfully, exiting `date`"
+  exit 1
+fi
+export JCAP=$JCAP1
+export LONA=$LONA1
+export LATA=$LATA1
 
 # run enkf analysis.
 echo "$analdate run enkf `date`"
-if [ $skipcat == "true" ]; then
-  # read un-concatenated pe files (set npefiles to number of mpi tasks used by gsi observer)
-  export npefiles=`expr $cores \/ $gsi_control_threads`
-else
-  export npefiles=0
-fi
+export npefiles=0
+export bfileprefix="sfg"
+export afileprefix="sanl"
+export nanals=$nanals1
+export charnanal="ensmean1"
 sh ${enkfscripts}/runenkf.sh > ${current_logdir}/run_enkf.out 2>&1
 # once enkf has completed, check log files.
 enkf_done=`cat ${current_logdir}/run_enkf.log`
@@ -247,36 +277,138 @@ else
 fi
 
 # compute ensemble mean analyses.
+export fileprefix="sanl"
 echo "$analdate starting ens mean analysis computation `date`"
 sh ${enkfscripts}/compute_ensmean_enkf.sh > ${current_logdir}/compute_ensmean_anal.out 2>&1
 echo "$analdate done computing ensemble mean analyses `date`"
 
-# recenter enkf analyses around control analysis
-if [ $controlanal == 'true' ] && [ $recenter_anal == 'true' ]; then
-   if [ $hybgain == 'true' ]; then
-      if [ $alpha -gt 0 ]; then
-         echo "$analdate blend enkf and 3dvar increments `date`"
-         sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc.out 2>&1
-         blendinc_done=`cat ${current_logdir}/blendinc.log`
-         if [ $blendinc_done == 'yes' ]; then
-           echo "$analdate increment blending/recentering completed successfully `date`"
-         else
-           echo "$analdate increment blending/recentering did not complete successfully, exiting `date`"
-           exit 1
-         fi
-      fi
-   else
-      echo "$analdate recenter enkf analysis ensemble around control analysis `date`"
-      sh ${enkfscripts}/recenter_ens_anal.sh > ${current_logdir}/recenter_ens_anal.out 2>&1
-      recenter_done=`cat ${current_logdir}/recenter_ens.log`
-      if [ $recenter_done == 'yes' ]; then
-        echo "$analdate recentering enkf analysis completed successfully `date`"
-      else
-        echo "$analdate recentering enkf analysis did not complete successfully, exiting `date`"
-        exit 1
-      fi
-   fi
+# run enkf analysis.
+echo "$analdate run enkf 2 `date`"
+export npefiles=0
+export bfileprefix="sfg2"
+export afileprefix="sanl2"
+export charnanal="ensmean2"
+export LONA=$LONA2
+export LATA=$LATA2
+export nanals=$nanals2
+export modelspace_vloc=".false." 
+export corrlengthnh=$corrlengthsh2
+export corrlengthtr=$corrlengthtr2
+export corrlengthsh=$corrlengthsh2
+export analpertwtnh=$analpertwtsh2
+export analpertwttr=$analpertwttr2
+export analpertwtsh=$analpertwtsh2
+export analpertwtnh_rtpp=$analpertwtsh_rtpp2
+export analpertwttr_rtpp=$analpertwttr_rtpp2
+export analpertwtsh_rtpp=$analpertwtsh_rtpp2
+export nobsl_max=$nobsl_max2
+sh ${enkfscripts}/runenkf.sh  > ${current_logdir}/run_enkf2.out  2>&1
+# once enkf has completed, check log files.
+set enkf_done=`cat ${current_logdir}/run_enkf.log`
+if [ $enkf_done == 'yes' ]; then
+  echo "$analdate enkf analysis 2 completed successfully `date`"
+else
+  echo "$analdate enkf analysis 2 did not complete successfully, exiting `date`"
+  exit 1
 fi
+export LONA=$LONA1
+export LATA=$LATA1
+export nanals=$nanals1
+export corrlengthnh=$corrlengthsh1
+export corrlengthtr=$corrlengthtr1
+export corrlengthsh=$corrlengthsh1
+export analpertwtnh=$analpertwtsh1
+export analpertwttr=$analpertwttr1
+export analpertwtsh=$analpertwtsh1
+export analpertwtnh_rtpp=$analpertwtsh_rtpp1
+export analpertwttr_rtpp=$analpertwttr_rtpp1
+export analpertwtsh_rtpp=$analpertwtsh_rtpp1
+export nobsl_max=$nobsl_max1
+export modelspace_vloc=".true."
+
+# compute ensemble mean analyses.
+export fileprefix="sanl2"
+echo "$analdate starting ens mean analysis computation `date`"
+sh ${enkfscripts}/compute_ensmean_enkf.sh > ${current_logdir}/compute_ensmean_anal2.out 2>&1
+echo "$analdate done computing ensemble mean analyses `date`"
+
+#echo "$analdate chgres enkf analysis means `date`"
+#export fileprefixin=sanl
+#export fileprefixout=sanl2
+#export LONB=$LONB2
+#export LATB=$LATB2
+#sh chgres.sh > ${current_logdir}/chgres.out 2>&1
+#export fileprefixin=sanl2
+#export fileprefixout=sanl
+#export LONB=$LONB1
+#export LATB=$LATB1
+#sh chgres.sh > ${current_logdir}/chgres2.out 2>&1
+#export nanals=$nanals1
+#export filename_anal1="sanl2_${analdate}_<charfhr>_ensmean.chgres"
+#export filename_anal2="sanl_${analdate}_<charfhr>_ensmean.orig"
+#export fileprefixa=sanl
+#export fileprefixb=sfg 
+#echo "$analdate blend enkf increments 1 `date`"
+#sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc.out  2>&1
+#blendinc_done=`cat ${current_logdir}/blendinc.log`
+#if  [ $blendinc_done == 'yes' ]; then
+#  echo "$analdate increment blending/recentering 1 completed successfully `date`"
+#else
+#  echo "$analdate increment blending/recentering 1 did not complete successfully, exiting `date`"
+#  exit 1
+#fi
+#export nanals=$nanals2
+#export filename_anal1="sanl2_${analdate}_<charfhr>_ensmean.orig"
+#export filename_anal2="sanl_${analdate}_<charfhr>_ensmean.chgres"
+#export fileprefixa=sanl2
+#export fileprefixb=sfg2
+#echo "$analdate blend enkf increments 2 `date`"
+#sh ${enkfscripts}/blendinc.sh > ${current_logdir}/blendinc2.out 2>&1
+#blendinc_done=`cat ${current_logdir}/blendinc.log`
+#if [ $blendinc_done == 'yes' ]; then
+#  echo "$analdate increment blending/recentering completed successfully `date`"
+#else
+#  echo "$analdate increment blending/recentering did not complete successfully, exiting `date`"
+#  exit 1
+#fi
+#export nanals=$nanals1
+iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
+for nhr_anal in $iaufhrs2; do
+  charfhr="fhr"`printf %02i $nhr_anal`
+  /bin/mv -f ${datapath2}/sanl_${analdate}_${charfhr}_ensmean ${datapath2}/sanl_${analdate}_${charfhr}_ensmean.orig
+  /bin/mv -f ${datapath2}/sanl2_${analdate}_${charfhr}_ensmean ${datapath2}/sanl2_${analdate}_${charfhr}_ensmean.orig
+  pushd $datapath2
+  nemsio2nc4.py -n sanl_${analdate}_${charfhr}_ensmean.orig
+  nemsio2nc4.py -n sanl2_${analdate}_${charfhr}_ensmean.orig
+  nemsio2nc4.py -n sfg_${analdate}_${charfhr}_ensmean
+  nemsio2nc4.py -n sfg2_${analdate}_${charfhr}_ensmean
+  nemsio2nc4.py -n sfg2_${analdate}_${charfhr}_ensmean.orig
+  popd
+  sh ${enkfscripts}/regridinc.sh ${datapath2}/sfg2_${analdate}_${charfhr}_ensmean.nc4 ${datapath2}/sanl2_${analdate}_${charfhr}_ensmean.orig.nc4 ${datapath2}/sfg_${analdate}_${charfhr}_ensmean.nc4 ${datapath2}/sanl_${analdate}_${charfhr}_ensmean.orig.nc4 ${datapath2}/sanl_${analdate}_${charfhr}_ensmean ${datapath2}/sanl2_${analdate}_${charfhr}_ensmean $alpha $beta
+done
+echo "$analdate recenter enkf analysis ensemble (hires) `date`"
+export fileprefix="sanl"
+export nanals=$nanals1
+sh ${enkfscripts}/recenter_ens_anal.sh > ${current_logdir}/recenter_ens_anal1.out 2>&1
+recenter_done=`cat ${current_logdir}/recenter_ens.log`
+if [ $recenter_done == 'yes' ]; then
+  echo "$analdate recentering hires enkf analysis completed successfully `date`"
+else
+  echo "$analdate recentering hires enkf analysis did not complete successfully, exiting `date`"
+  exit 1
+fi
+echo "$analdate recenter enkf analysis ensemble (lores) `date`"
+export fileprefix="sanl2"
+export nanals=$nanals2
+sh ${enkfscripts}/recenter_ens_anal.sh > ${current_logdir}/recenter_ens_anal2.out 2>&1
+recenter_done=`cat ${current_logdir}/recenter_ens.log`
+if [ $recenter_done == 'yes' ]; then
+  echo "$analdate recentering lores enkf analysis completed successfully `date`"
+else
+  echo "$analdate recentering lores enkf analysis did not complete successfully, exiting `date`"
+  exit 1
+fi
+export nanals=$nanals1
 
 # for passive (replay) cycling of control forecast, optionally run GSI observer
 # on control forecast background (diag files saved with 'control2' suffix)
@@ -321,7 +453,12 @@ if [ $controlfcst == 'true' ]; then
        fi
     fi
 fi
+
 echo "$analdate run enkf ens first guess `date`"
+export fileprefix="sfg"
+export fileprefixa="sanl"
+export bfileprefix="bfg"
+export memdirprefix="mem"
 sh ${enkfscripts}/run_fg_ens.sh > ${current_logdir}/run_fg_ens.out  2>&1
 ens_done=`cat ${current_logdir}/run_fg_ens.log`
 if [ $ens_done == 'yes' ]; then
@@ -330,6 +467,37 @@ else
   echo "$analdate enkf first-guess did not complete successfully, exiting `date`"
   exit 1
 fi
+
+echo "$analdate run enkf ens first guess 2 `date`"
+export fileprefix="sfg2"
+export fileprefixa="sanl2"
+export bfileprefix="bfg2"
+export memdirprefix="mem2"
+export RES=$RES2
+export LONB=$LONB2
+export LATB=$LATB2
+export JCAP=$JCAP2
+export dt_atmos=$dt_atmos2
+export cdmbgwd=$cdmbgwd2
+export SPPT_LSCALE=$SPPT_LSCALE2
+export SHUM_LSCALE=$SHUM_LSCALE2
+export SKEB_LSCALE=$SKEB_LSCALE2
+export nanals=$nanals2
+sh ${enkfscripts}/run_fg_ens.sh > ${current_logdir}/run_fg_ens2.out  2>&1
+ens_done=`cat ${current_logdir}/run_fg_ens.log`
+if [ $ens_done == 'yes' ]; then
+  echo "$analdate enkf first-guess 2 completed successfully `date`"
+else
+  echo "$analdate enkf first-guess 2 did not complete successfully, exiting `date`"
+  exit 1
+fi
+export RES=$RES1
+export LONB=$LONB1
+export LATB=$LATB1
+export JCAP=$JCAP1
+export dt_atmos=$dt_atmos1
+export cdmbgwd=$cdmbgwd1
+export nanals=$nanals1
 
 if [ $fg_only == 'false' ]; then
 

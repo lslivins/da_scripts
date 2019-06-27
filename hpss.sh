@@ -71,7 +71,7 @@ while [ $nanal -le $nanals ]; do
    if [ $nanal -eq 0 ]; then
       charnanal="ensmean"
    else
-      charnanal="mem"`printf %03i $nanal`
+      charnanal="mem"`printf %04i $nanal`
    fi
    # remove GSI temp dirs
    /bin/rm -rf gsitmp_${charnanal} 

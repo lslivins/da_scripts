@@ -1,9 +1,10 @@
 echo "running on $machine using $NODES nodes"
 ## ulimit -s unlimited
 
-export ndates_job=10 # number of DA cycles to run in one job submission
+export ndates_job=1 # number of DA cycles to run in one job submission
 # resolution of control and ensmemble.
 export RES=192
+export RES2=48
 export RES_CTL=384 
 # Penney 2014 Hybrid Gain algorithm with beta_1=1.0
 # beta_2=alpha and beta_3=0 in eqn 6 
@@ -11,7 +12,7 @@ export RES_CTL=384
 export alpha=500 # percentage of 3dvar increment (beta_2*1000)
 export beta=1000 # percentage of enkf increment (*10)
 export hybgain='true' # set to true for hybrid gain 3DVar/EnKF
-export exptname="C${RES}C${RES_CTL}_hybgain"
+export exptname="C${RES2}C${RES}C${RES_CTL}_hybgain"
 export cores=`expr $NODES \* $corespernode`
 
 # check that value of NODES is consistent with PBS_NP on theia.
@@ -31,8 +32,8 @@ export rungfs='run_fv3.sh' # ensemble forecast
 
 export recenter_anal="true" # recenter enkf analysis around GSI hybrid 4DEnVar analysis
 export do_cleanup='true' # if true, create tar files, delete *mem* files.
-export controlanal='true' # use gsi hybrid (if false, pure enkf is used)
-export controlfcst='true' # if true, run dual-res setup with single high-res control
+export controlanal='false' # use gsi hybrid (if false, pure enkf is used)
+export controlfcst='false' # if true, run dual-res setup with single high-res control
 export cleanup_fg='true'
 export cleanup_ensmean='true'
 export cleanup_anal='true'
@@ -43,17 +44,17 @@ export resubmit='true'
 # control forecast files have 'control2' suffix, instead of 'control'
 # GSI observer will be run on 'control2' forecast
 # this is for diagnostic purposes (to get GSI diagnostic files) 
-export replay_controlfcst='true'
-export replay_run_observer='true' # run observer on replay forecast
+export replay_controlfcst='false'
+export replay_run_observer='false' # run observer on replay forecast
 # python script checkdate.py used to check
 # YYYYMMDDHH analysis date string to see if
 # full ensemble should be saved to HPSS (returns 0 if 
 # HPSS save should be done)
 export save_hpss_subset="true" # save a subset of data each analysis time to HPSS
 export save_hpss="true"
-export run_long_fcst="true"  # spawn a longer control forecast at 00 UTC
-export ensmean_restart='false'
-export copy_history_files=1 # save pressure level history files (and compute ens mean)
+export run_long_fcst="false"  # spawn a longer control forecast at 00 UTC
+export ensmean_restart='true'
+export copy_history_files=1 # # save pressure level history files (and compute ens mean)
 
 # override values from above for debugging.
 #export cleanup_ensmean='false'
@@ -91,6 +92,9 @@ export logdir="${datadir}/logs/${exptname}"
 export corrlengthnh=1250
 export corrlengthtr=1250
 export corrlengthsh=1250
+export corrlengthnh2=3125
+export corrlengthtr2=3125
+export corrlengthsh2=3125
 export lnsigcutoffnh=1.5
 export lnsigcutofftr=1.5
 export lnsigcutoffsh=1.5
@@ -203,12 +207,15 @@ fi
 export SPPT=0.5
 export SPPT_TSCALE=21600.
 export SPPT_LSCALE=500.e3
+export SPPT_LSCALE2=1000.e3
 export SHUM=0.005
 export SHUM_TSCALE=21600.
 export SHUM_LSCALE=500.e3
+export SHUM_LSCALE2=1000.e3
 export SKEB=0.3
 export SKEB_TSCALE=21600.
 export SKEB_LSCALE=500.e3
+export SKEB_LSCALE2=1000.e3
 export SKEBNORM=0
 export SKEB_NPASS=30
 export SKEB_VDOF=5
@@ -240,6 +247,34 @@ elif [ $RES -eq 96 ]; then
    export cdmbgwd="0.125,3.0"
 else
    echo "model parameters for ensemble resolution C$RES_CTL not set"
+   exit 1
+fi
+if [ $RES2 -eq 192 ]; then
+   export JCAP2=382 
+   export LONB2=768   
+   export LATB2=384  
+   export dt_atmos2=450
+   export cdmbgwd2="0.2,2.5"
+elif [ $RES2 -eq 128 ]; then
+   export JCAP2=254 
+   export LONB2=512   
+   export LATB2=256  
+   export dt_atmos2=720
+   export cdmbgwd2="0.15,2.75"
+elif [ $RES2 -eq 96 ]; then
+   export JCAP2=188 
+   export LONB2=384   
+   export LATB2=190  
+   export dt_atmos2=900
+   export cdmbgwd2="0.125,3.0"
+elif [ $RES2 -eq 48 ]; then
+   export JCAP2=92  
+   export LONB2=192   
+   export LATB2=94   
+   export dt_atmos2=1200
+   export cdmbgwd2="0.062,3.5"
+else
+   echo "model parameters for ensemble resolution C$RES2 not set"
    exit 1
 fi
 
@@ -274,6 +309,8 @@ export FHCYC=0 # run global_cycle instead of gcycle inside model
 
 export LONA=$LONB
 export LATA=$LATB      
+export LONA2=$LONB2
+export LATA2=$LATB2
 
 export ANALINC=6
 
@@ -298,7 +335,7 @@ export iau_delthrs="6" # iau_delthrs < 0 turns IAU off
 export SMOOTHINF=35
 export npts=`expr \( $LONA \) \* \( $LATA \)`
 export RUN=gdas1 # use gdas obs
-export reducedgrid=.true.
+export reducedgrid=.false.
 export univaroz=.false.
 
 export iassim_order=0
@@ -311,6 +348,12 @@ export analpertwttr=0.75
 export analpertwtnh_rtpp=0.0
 export analpertwtsh_rtpp=0.0
 export analpertwttr_rtpp=0.0
+export analpertwtnh2=0.9
+export analpertwtsh2=0.9
+export analpertwttr2=0.9
+export analpertwtnh_rtpp2=0.4
+export analpertwtsh_rtpp2=0.4
+export analpertwttr_rtpp2=0.4
 export pseudo_rh=.true.
                                                                     
 export letkf_flag=.true.
@@ -321,6 +364,7 @@ export modelspace_vloc=.true.
 export letkf_novlocal=.true.
 export dfs_sort=.false.
 export nobsl_max=10000
+export nobsl_max2=25000
 export sprd_tol=1.e30
 export varqc=.false.
 export huber=.false.
@@ -328,17 +372,8 @@ export zhuberleft=1.e10
 export zhuberright=1.e10
 
 export biasvar=-500
-if [ $controlanal == 'false' ] && [ $NOSAT == "NO" ];  then
-   export lupd_satbiasc=.true.
-   export numiter=4
-else
-   export lupd_satbiasc=.false.
-   export numiter=0
-fi
-# iterate enkf in obspace for varqc
-if [ $varqc == ".true." ]; then
-  export numiter=5
-fi
+export lupd_satbiasc=.false.
+export numiter=0
 # use pre-generated bias files.
 #export lupd_satbiasc=.false.
 #export numiter=0
@@ -353,13 +388,14 @@ fi
 #export zhuberright=1.1
                                                                     
 export nanals=80                                                    
+export nanals2=1200                                                    
                                                                     
 export paoverpb_thresh=0.998  # set to 1.0 to use all the obs in serial EnKF
 export saterrfact=1.0
 export deterministic=.true.
 export sortinc=.true.
                                                                     
-export nitermax=1
+export nitermax=2
 
 export enkfscripts="${basedir}/scripts/${exptname}"
 export homedir=$enkfscripts
@@ -392,6 +428,7 @@ elif [ "$machine" == 'gaea' ]; then
    export execdir=${enkfscripts}/exec_${machine}
    export enkfbin=${execdir}/global_enkf
    export FCSTEXEC=${execdir}/${fv3exec}
+   export CHGRESEXEC=${execdir}/chgres_recenter.exe
    export gsiexec=${execdir}/global_gsi
    export nemsioget=${execdir}/nemsio_get
 elif [ "$machine" == 'wcoss' ]; then

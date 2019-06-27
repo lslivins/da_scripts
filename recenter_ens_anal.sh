@@ -1,8 +1,17 @@
 #!/bin/sh
 
+# setup node parameters used in blendinc.csh, recenter_ens_anal.csh and compute_ensmean_fcst.csh
+export mpitaskspernode=`python -c "import math; print int(math.ceil(float(${nanals})/float(${NODES})))"`
+if [ $mpitaskspernode -lt 1 ]; then
+ export mpitaskspernode=1
+fi
+export OMP_NUM_THREADS=`expr $corespernode \/ $mpitaskspernode`
+echo "mpitaskspernode = $mpitaskspernode threads = $OMP_NUM_THREADS"
+export nprocs=$nanals
+
 export VERBOSE=YES
 export OMP_STACKSIZE=256M
-charnanal="control"
+charnanal="ensmean"
 pushd ${datapath2}
 
 iaufhrs2=`echo $iaufhrs | sed 's/,/ /g'`
@@ -11,10 +20,13 @@ for nhr_anal in $iaufhrs2; do
 charfhr="fhr"`printf %02i $nhr_anal`
 
 echo "recenter ensemble perturbations about low resolution hybrid analysis"
-filename_meanin=sanl_${analdate}_${charfhr}_ensmean
-filename_meanout=sanl_${analdate}_${charfhr}_${charnanal}
-filenamein=sanl_${analdate}_${charfhr}
-filenameout=sanlr_${analdate}_${charfhr}
+filename_meanin=${fileprefix}_${analdate}_${charfhr}_ensmean.orig
+ls -l ${filename_meanin}
+filename_meanout=${fileprefix}_${analdate}_${charfhr}_${charnanal}
+ls -l ${filename_meanout}
+filenamein=${fileprefix}_${analdate}_${charfhr}
+ls -l ${fileprefix}_${analdate}_${charfhr}_mem0001
+filenameout=${fileprefix}r_${analdate}_${charfhr}
 
 export PGM="${execdir}/recentersigp.x $filenamein $filename_meanin $filename_meanout $filenameout $nanals"
 errorcode=0
@@ -32,13 +44,11 @@ else
 fi
 
 # rename files.
-/bin/mv -f $filename_meanin  ${filename_meanin}.orig
-/bin/cp -f $filename_meanout $filename_meanin
 nanal=1
 while [ $nanal -le $nanals ]; do
-   charnanal_tmp="mem"`printf %03i $nanal`
-   analfiler=sanlr_${analdate}_${charfhr}_${charnanal_tmp}
-   analfile=sanl_${analdate}_${charfhr}_${charnanal_tmp}
+   charnanal_tmp="mem"`printf %04i $nanal`
+   analfiler=${fileprefix}r_${analdate}_${charfhr}_${charnanal_tmp}
+   analfile=${fileprefix}_${analdate}_${charfhr}_${charnanal_tmp}
    if [ -s $analfiler ]; then
       /bin/mv -f $analfile ${analfile}.orig
       /bin/mv -f $analfiler $analfile
@@ -59,11 +69,10 @@ else
    echo "error encountered, copying original files back.."
    echo "no" >! ${current_logdir}/recenter_ens.log
    # rename files back
-   /bin/mv -f ${filename_meanin}.orig  ${filename_meanin}
    nanal=1
    while [ $nanal -le $nanals ]; do
-      charnanal_tmp="mem"`printf %03i $nanal`
-      analfile=sanl_${analdate}_${charfhr}_${charnanal_tmp}
+      charnanal_tmp="mem"`printf %04i $nanal`
+      analfile=${fileprefix}_${analdate}_${charfhr}_${charnanal_tmp}
       /bin/mv -f ${analfile}.orig ${analfile}
       nanal=$((nanal+1))
    done

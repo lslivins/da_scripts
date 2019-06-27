@@ -2,14 +2,14 @@
 #SBATCH -q urgent
 ##SBATCH -q debug
 #SBATCH --clusters c4
-#SBATCH -t 16:00:00
+#SBATCH -t 04:00:00
 ##SBATCH -t 00:30:00
-##SBATCH -A nggps_psd
-#SBATCH -A cpo_ngrr_e
-#SBATCH -N 20    
-#SBATCH -J C192C384_hybgain
-#SBATCH -e C192C384_hybgain.err
-#SBATCH -o C192C384_hybgain.out
+#SBATCH -A nggps_psd
+##SBATCH -A cpo_ngrr_e
+#SBATCH -N 40    
+#SBATCH -J C48C192C384_hybgain
+#SBATCH -e C48C192C384_hybgain.err
+#SBATCH -o C48C192C384_hybgain.out
 
 export NODES=$SLURM_NNODES
 export corespernode=$SLURM_CPUS_ON_NODE
