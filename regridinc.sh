@@ -1,5 +1,5 @@
 source $MODULESHOME/init/sh
-module load nco
+module load nco/4.6.4
 module load cdo
 
 input_fg_lores=$1
@@ -11,6 +11,9 @@ output_anal_lores=$5
 output_anal_hires=$6
 alpha=$7 # weight for lores increment
 beta=$8 # weight for hires increment
+
+wt_lores=`python -c "print $alpha / 1000.0"`
+wt_hires=`python -c "print $beta / 1000.0"`
 
 if [ -z $execdir ]; then
   execdir=$PWD/exec_gaea
@@ -38,10 +41,10 @@ cdo remapbil,/tmp/lores_griddef$$ /tmp/hiresinc$$.nc4 /tmp/hiresinc_lores$$.nc4
 ls -l /tmp/hiresinc_lores$$.nc4
 
 # compute weighted average of increments on low res grid
-ncflint -w $alpha,$beta /tmp/loresinc$$.nc4 /tmp/hiresinc_lores$$.nc4 /tmp/blendedinc_lores$$.nc4
+ncflint -w $wt_lores,$wt_hires /tmp/loresinc$$.nc4 /tmp/hiresinc_lores$$.nc4 /tmp/blendedinc_lores$$.nc4
 
 # compute weighted average of increments on high res grid
-ncflint -w $alpha,$beta /tmp/loresinc_hires$$.nc4 /tmp/hiresinc$$.nc4 /tmp/blendedinc_hires$$.nc4
+ncflint -w $wt_lores,$wt_hires /tmp/loresinc_hires$$.nc4 /tmp/hiresinc$$.nc4 /tmp/blendedinc_hires$$.nc4
 ls -l /tmp/blendedinc_hires$$.nc4
 
 # compute new analysis file on high res grid
