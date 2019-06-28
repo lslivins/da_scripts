@@ -1,5 +1,7 @@
+#!/bin/sh
+set -x
 source $MODULESHOME/init/sh
-module load nco/4.6.4
+module load nco
 module load cdo
 
 input_fg_lores=$1
@@ -14,10 +16,7 @@ beta=$8 # weight for hires increment
 
 wt_lores=`python -c "print $alpha / 1000.0"`
 wt_hires=`python -c "print $beta / 1000.0"`
-
-if [ -z $execdir ]; then
-  execdir=$PWD/exec_gaea
-fi
+echo "wt_lores,wt_hires = $wt_lores,$wt_hires"
 
 #  compute high res inc target grid definition
 cdo griddes $input_fg_hires > /tmp/hires_griddef$$
@@ -55,12 +54,20 @@ ls -l ${output_anal_hires}.nc4
 ncflint -w 1.0,1.0 -O $input_fg_lores /tmp/blendedinc_lores$$.nc4 ${output_anal_lores}.nc4
 ls -l ${output_anal_lores}.nc4
 
+# save increment files.
+#/bin/mv -f /tmp/blendedinc_hires$$.nc4 ${datapath2}/blendedinc_hires.nc4
+#/bin/mv -f /tmp/hiresinc$$.nc4 ${datapath2}/hiresinc.nc4
+#/bin/mv -f /tmp/loresinc_hires$$.nc4 ${datapath2}/loresinc_hires.nc4
+#/bin/mv -f /tmp/blendedinc_lores$$.nc4 ${datapath2}/blendedinc_lorres.nc4
+#/bin/mv -f /tmp/loresinc$$.nc4 ${datapath2}/loresinc.nc4
+#/bin/mv -f /tmp/hiresinc_lores$$.nc4 ${datapath2}/hiresinc_lores.nc4
+
 /bin/rm -f /tmp/*$$.nc4 /tmp/*griddef$$
 
 # convert $output_anal_hires $output_anal_lores back to nemsio binary
 nemsio_file="$(dirname $input_anal_hires)/$(basename $input_anal_hires .nc4)"
-echo "${execdir}/nctonemsio.x ${output_anal_hires}.nc4 $nemsio_file ${output_anal_hires}"
 ${execdir}/nctonemsio.x ${output_anal_hires}.nc4 $nemsio_file ${output_anal_hires}
 nemsio_file="$(dirname $input_anal_lores)/$(basename $input_anal_lores .nc4)"
-echo "${execdir}/nctonemsio.x ${output_anal_lores}.nc4 $nemsio_file ${output_anal_lores}"
 ${execdir}/nctonemsio.x ${output_anal_lores}.nc4 $nemsio_file ${output_anal_lores}
+ls -l ${output_anal_hires}
+ls -l ${output_anal_lores}
