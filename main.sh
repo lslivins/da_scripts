@@ -224,13 +224,15 @@ export LONA=$LONA1
 export LATA=$LATA1
 export dmesh=145
 echo "$analdate run gsi observer with `printenv | grep charnanal` `date`"
-sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsi_observer1.out 2>&1
+#sh ${enkfscripts}/run_gsiobserver.sh > ${current_logdir}/run_gsi_observer1.out 2>&1
+# need to run full 3dvar to generate bias coeffs
+sh ${enkfscripts}/run_hybridanal.sh > ${current_logdir}/run_gsi_hybrid.out 2>&1
 # once observer has completed, check log files.
-hybrid_done=`cat ${current_logdir}/run_gsi_observer.log`
+hybrid_done=`cat ${current_logdir}/run_gsi_hybrid.log`
 if [ $hybrid_done == 'yes' ]; then
-  echo "$analdate gsi observer completed successfully `date`"
+  echo "$analdate gsi 3dvar completed successfully `date`"
 else
-  echo "$analdate gsi observer did not complete successfully, exiting `date`"
+  echo "$analdate gsi 3dvar did not complete successfully, exiting `date`"
   exit 1
 fi
 

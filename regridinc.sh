@@ -55,12 +55,12 @@ ncflint -w 1.0,1.0 -O $input_fg_lores /tmp/blendedinc_lores$$.nc4 ${output_anal_
 ls -l ${output_anal_lores}.nc4
 
 # save increment files.
-#/bin/mv -f /tmp/blendedinc_hires$$.nc4 ${datapath2}/blendedinc_hires.nc4
-#/bin/mv -f /tmp/hiresinc$$.nc4 ${datapath2}/hiresinc.nc4
-#/bin/mv -f /tmp/loresinc_hires$$.nc4 ${datapath2}/loresinc_hires.nc4
-#/bin/mv -f /tmp/blendedinc_lores$$.nc4 ${datapath2}/blendedinc_lorres.nc4
-#/bin/mv -f /tmp/loresinc$$.nc4 ${datapath2}/loresinc.nc4
-#/bin/mv -f /tmp/hiresinc_lores$$.nc4 ${datapath2}/hiresinc_lores.nc4
+#/bin/mv -f /tmp/blendedinc_hires$$.nc4 ${datapath2}/blendedinc_hires_${charfhr}.nc4
+#/bin/mv -f /tmp/hiresinc$$.nc4 ${datapath2}/hiresinc_${charfhr}.nc4
+#/bin/mv -f /tmp/loresinc_hires$$.nc4 ${datapath2}/loresinc_hires_${charfhr}.nc4
+#/bin/mv -f /tmp/blendedinc_lores$$.nc4 ${datapath2}/blendedinc_lores_${charfhr}.nc4
+#/bin/mv -f /tmp/loresinc$$.nc4 ${datapath2}/loresinc_${charfhr}.nc4
+#/bin/mv -f /tmp/hiresinc_lores$$.nc4 ${datapath2}/hiresinc_lores_${charfhr}.nc4
 
 /bin/rm -f /tmp/*$$.nc4 /tmp/*griddef$$
 
