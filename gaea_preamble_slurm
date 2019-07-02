@@ -1,7 +1,7 @@
 #!/bin/sh
 #SBATCH -q urgent
 ##SBATCH -q debug
-#SBATCH --clusters c3
+#SBATCH --clusters c4
 #SBATCH -t 04:00:00
 ##SBATCH -t 00:30:00
 #SBATCH -A nggps_psd
@@ -58,7 +58,7 @@ export fg_proc=$corespernode
 export fg_threads=1
 export write_groups=1
 export write_tasks=6 
-if [ $corepernode -eq 36 ]; then
+if [ $corespernode -eq 36 ]; then
 export write_groups=2
 export layout="2, 2" 
 elif [ $corespernode -eq 32 ]; then
