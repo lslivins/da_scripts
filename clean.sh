@@ -26,7 +26,7 @@ fi
 #echo "files moved to analens `date`"
 /bin/rm -f sanl_*mem* # don't save analysis ensemble
 /bin/rm -f sanl2_*mem* # don't save analysis ensemble
-/bin/rm -f s*ensmean*nc4 # just save spread netcdf files.
+#/bin/rm -f s*ensmean*nc4 # just save spread netcdf files.
 
 #nemsio2nc4.py -n sanl_${analdate}_fhr06_ensmean
 #nemsio2nc4.py -n sanl_${analdate}_fhr06_ensmean.chgres

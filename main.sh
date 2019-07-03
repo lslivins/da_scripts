@@ -187,16 +187,14 @@ fi
 
 # for pure enkf or if replay cycle used for control forecast, symlink
 # ensmean files to 'control'
-if [ $controlfcst == 'false' ] || [ $replay_controlfcst == 'true' ]; then
-   # single res hybrid, just symlink ensmean to control (no separate control forecast)
-   fh=$FHMIN
-   while [ $fh -le $FHMAX ]; do
-     fhr=`printf %02i $fh`
-     ln -fs $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_control
-     ln -fs $datapath2/bfg_${analdate}_fhr${fhr}_ensmean $datapath2/bfg_${analdate}_fhr${fhr}_control
-     fh=$((fh+FHOUT))
-   done
-fi
+# single res hybrid, just symlink ensmean to control (no separate control forecast)
+fh=$FHMIN
+while [ $fh -le $FHMAX ]; do
+  fhr=`printf %02i $fh`
+  ln -fs $datapath2/sfg_${analdate}_fhr${fhr}_ensmean $datapath2/sfg_${analdate}_fhr${fhr}_control
+  ln -fs $datapath2/bfg_${analdate}_fhr${fhr}_ensmean $datapath2/bfg_${analdate}_fhr${fhr}_control
+  fh=$((fh+FHOUT))
+done
 
 # if ${datapathm1}/cold_start_bias exists, GSI run in 'observer' mode
 # to generate diag_rad files to initialize angle-dependent 
@@ -215,7 +213,7 @@ fi
 # generated diag files used by EnKF. No control analysis.
 export fileprefix="sfg"
 export bfileprefix="bfg"
-export charnanal='ensmean' 
+export charnanal='control' 
 export charnanal2='ensmean1'
 export lobsdiag_forenkf='.true.'
 export skipcat="false"
@@ -385,8 +383,11 @@ for nhr_anal in $iaufhrs2; do
   nemsio2nc4.py -n sfg_${analdate}_${charfhr}_ensmean
   nemsio2nc4.py -n sfg2_${analdate}_${charfhr}_ensmean
   nemsio2nc4.py -n sfg2_${analdate}_${charfhr}_ensmean.orig
+  if [ $nhr_anal -eq 6 ]; then
+     nemsio2nc4.py -n sanl_${analdate}_${charfhr}_control
+  fi
   popd
-  sh ${enkfscripts}/regridinc.sh ${datapath2}/sfg2_${analdate}_${charfhr}_ensmean.nc4 ${datapath2}/sanl2_${analdate}_${charfhr}_ensmean.orig.nc4 ${datapath2}/sfg_${analdate}_${charfhr}_ensmean.nc4 ${datapath2}/sanl_${analdate}_${charfhr}_ensmean.orig.nc4 ${datapath2}/sanl2_${analdate}_${charfhr}_ensmean ${datapath2}/sanl_${analdate}_${charfhr}_ensmean $alpha $beta
+  sh ${enkfscripts}/regridinc.sh ${datapath2}/sfg2_${analdate}_${charfhr}_ensmean.nc4 ${datapath2}/sanl2_${analdate}_${charfhr}_ensmean.orig.nc4 ${datapath2}/sfg_${analdate}_${charfhr}_ensmean.nc4 ${datapath2}/sanl_${analdate}_${charfhr}_ensmean.orig.nc4 ${datapath2}/sanl2_${analdate}_${charfhr}_ensmean ${datapath2}/sanl_${analdate}_${charfhr}_ensmean $alpha $beta $charfhr
 done
 echo "$analdate recenter enkf analysis ensemble (hires) `date`"
 export fileprefix="sanl"
@@ -481,6 +482,7 @@ export LATB=$LATB2
 export JCAP=$JCAP2
 export dt_atmos=$dt_atmos2
 export cdmbgwd=$cdmbgwd2
+#export SKEB=$SKEB2
 export SPPT_LSCALE=$SPPT_LSCALE2
 export SHUM_LSCALE=$SHUM_LSCALE2
 export SKEB_LSCALE=$SKEB_LSCALE2
