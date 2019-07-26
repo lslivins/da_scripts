@@ -206,7 +206,7 @@ program nctonemsio
          print *,'wrote u level ',k,minval(work(:,krecu)),maxval(work(:,krecu))
       endif
       call twodtooned(vgrd3d(:,:,k),work1d,lonb,latb)
-      work(:,krecu) = work1d
+      work(:,krecv) = work1d
       call nemsio_writerecv(gfile_o,'vgrd', 'mid layer',k,work(:,krecv),   iret=iret)
       if (iret /= 0) then
          print *,'Error writing v to ',trim(filename_o),k
@@ -215,7 +215,7 @@ program nctonemsio
          print *,'wrote v level ',k,minval(work(:,krecv)),maxval(work(:,krecv))
       endif
       call twodtooned(tmp3d(:,:,k),work1d,lonb,latb)
-      work(:,krecu) = work1d
+      work(:,krect) = work1d
       call nemsio_writerecv(gfile_o,'tmp',  'mid layer',k,work(:,krect),   iret=iret)
       if (iret /= 0) then
          print *,'Error writing t to ',trim(filename_o),k
@@ -224,7 +224,7 @@ program nctonemsio
          print *,'wrote t level ',k,minval(work(:,krect)),maxval(work(:,krect))
       endif
       call twodtooned(spfh3d(:,:,k),work1d,lonb,latb)
-      work(:,krecu) = work1d
+      work(:,krecq) = work1d
       call nemsio_writerecv(gfile_o,'spfh', 'mid layer',k,work(:,krecq),   iret=iret)
       if (iret /= 0) then
          print *,'Error writing q to ',trim(filename_o),k
@@ -233,7 +233,7 @@ program nctonemsio
          print *,'wrote q level ',k,minval(work(:,krecq)),maxval(work(:,krecq))
       endif
       call twodtooned(o3mr3d(:,:,k),work1d,lonb,latb)
-      work(:,krecu) = work1d
+      work(:,krecoz) = work1d
       call nemsio_writerecv(gfile_o,'o3mr', 'mid layer',k,work(:,krecoz),  iret=iret)
       if (iret /= 0) then
          print *,'Error writing o3 to ',trim(filename_o),k
@@ -242,7 +242,7 @@ program nctonemsio
          print *,'wrote o3 level ',k,minval(work(:,krecoz)),maxval(work(:,krecoz))
       endif
       call twodtooned(clwmr3d(:,:,k),work1d,lonb,latb)
-      work(:,krecu) = work1d
+      work(:,kreccwmr) = work1d
       call nemsio_writerecv(gfile_o,'clwmr','mid layer',k,work(:,kreccwmr),iret=iret)
       if (iret /= 0) then
          print *,'Error writing cwmr to ',trim(filename_o),k
@@ -251,7 +251,7 @@ program nctonemsio
          print *,'wrote cwmr level ',k,minval(work(:,kreccwmr)),maxval(work(:,kreccwmr))
       endif
       call twodtooned(icmr3d(:,:,k),work1d,lonb,latb)
-      work(:,krecu) = work1d
+      work(:,krecicmr) = work1d
       call nemsio_writerecv(gfile_o,'icmr','mid layer',k,work(:,krecicmr),iret=iret)
       if (iret /= 0) then
          print *,'Error writing icmr to ',trim(filename_o),k
